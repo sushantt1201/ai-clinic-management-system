@@ -1,0 +1,19 @@
+{
+  "name": "ai-clinic-management-system",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n frontend,backend -c cyan,green \"npm run dev --workspace frontend\" \"npm run dev --workspace backend\"",
+    "build": "npm run build --workspace frontend && npm run build --workspace backend",
+    "start": "npm run start --workspace backend",
+    "check": "npm run lint --workspace frontend && npm run lint --workspace backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
+
