@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "build": "node --check src/server.js && node --check src/app.js",
+    "build": "node --check src/server.js && node --check src/app.js && node --check src/config/database.js && node --check src/scripts/check-database.js",
+    "db:check": "node src/scripts/check-database.js",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -14,6 +15,7 @@
     "dotenv": "latest",
     "express": "latest",
     "helmet": "latest",
+    "mongoose": "latest",
     "morgan": "latest"
   },
   "devDependencies": {
@@ -22,4 +24,3 @@
     "globals": "latest"
   }
 }
-

@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { getDatabaseStatus } from './config/database.js';
 
 export function createApp() {
   const app = express();
@@ -15,6 +16,7 @@ export function createApp() {
     response.status(200).json({
       success: true,
       message: 'AI Clinic API is healthy',
+      database: getDatabaseStatus(),
       timestamp: new Date().toISOString(),
     });
   });
@@ -25,4 +27,3 @@ export function createApp() {
 
   return app;
 }
-
