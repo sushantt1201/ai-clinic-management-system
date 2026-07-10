@@ -10,8 +10,8 @@ A full-stack clinic platform for patients, doctors, and administrators, with AI-
 
 ## Local development
 
-1. Copy each `.env.example` file to `.env` in the same directory.
-2. Add your MongoDB Atlas connection string to `backend/.env` as `MONGODB_URI`.
+1. Create `backend/.env` with `NODE_ENV`, `PORT`, `CLIENT_URL`, and `MONGODB_URI`.
+2. Create `frontend/.env` with `VITE_API_URL`.
 3. Install dependencies with `npm install` from the project root.
 4. Verify MongoDB with `npm run db:check --workspace backend`.
 5. Run both applications with `npm run dev`.
