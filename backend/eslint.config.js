@@ -11,6 +11,8 @@ export default [
       sourceType: 'module',
       globals: globals.node,
     },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
 ];
-

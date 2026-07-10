@@ -6,17 +6,23 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "build": "node --check src/server.js && node --check src/app.js && node --check src/config/database.js && node --check src/scripts/check-database.js",
+    "build": "node src/scripts/check-source.js",
     "db:check": "node src/scripts/check-database.js",
+    "auth:check": "node src/scripts/check-auth.js",
     "lint": "eslint ."
   },
   "dependencies": {
+    "bcryptjs": "latest",
+    "cookie-parser": "latest",
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
+    "express-rate-limit": "latest",
     "helmet": "latest",
+    "jsonwebtoken": "latest",
     "mongoose": "latest",
-    "morgan": "latest"
+    "morgan": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
     "@eslint/js": "latest",
