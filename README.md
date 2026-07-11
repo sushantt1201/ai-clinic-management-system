@@ -1,24 +1,115 @@
-# AI Clinic Management System
+# People’s Clinic — AI Clinic Management System
 
-A full-stack clinic platform for patients, doctors, and administrators, with AI-assisted appointment workflows through n8n, Vapi, Google Calendar, and WhatsApp.
+People’s Clinic is a full-stack clinic management platform designed for patients, doctors, and administrators. It combines everyday clinic operations with secure role-based access and AI-assisted appointment booking in one connected system.
 
-## Applications
+## What It Solves
 
-- `frontend`: React and Vite client, intended for Vercel
-- `backend`: Node.js and Express API, intended for Render
-- `docs`: architecture and project documentation
+Clinic information is often divided between phone calls, paper records, messaging applications, and separate scheduling tools. This creates delays for patients and repetitive administrative work for clinic staff.
 
-## Local development
+People’s Clinic provides a common platform where:
 
-1. Create `backend/.env` with `NODE_ENV`, `PORT`, `CLIENT_URL`, `MONGODB_URI`, and a random `JWT_SECRET` containing at least 32 characters.
-2. Create `frontend/.env` with `VITE_API_URL`.
-3. Install dependencies with `npm install` from the project root.
-4. Verify MongoDB with `npm run db:check --workspace backend`.
-5. Verify authentication with `npm run auth:check --workspace backend`.
-6. Run both applications with `npm run dev`.
+- Patients can access clinic services and manage their care journey.
+- Doctors can work with appointments and patient information.
+- Administrators can manage clinic operations through protected access.
+- Appointments can be requested through a standard form or an AI calling experience.
+- Authentication and patient data are handled by a dedicated backend rather than only automation workflows.
 
-The frontend runs on `http://localhost:5173` and the API on `http://localhost:5000` by default.
+## Current Features
 
-## Security
+### Clinic Website
 
-Never commit real credentials. Keep database URLs, signing secrets, webhook URLs, and third-party tokens in local environment files and deployment environment settings.
+- Responsive People’s Clinic landing page
+- Transparent navigation that changes when scrolling
+- Clinic hours and contact information
+- About, services, doctors, health insights, newsletter, and contact sections
+- Form-based appointment request interface
+- AI call appointment interface
+- Separate patient, doctor, and administrator login options
+
+### Authentication Backend
+
+- Patient registration
+- Email or phone login
+- Secure bcrypt password hashing
+- HTTP-only authentication cookies
+- Login, logout, and profile routes
+- Duplicate-account protection
+- Input validation
+- Patient, doctor, and administrator role protection
+- Authentication rate limiting
+- MongoDB database connection
+- Automated disposable authentication test
+
+## Technology Stack
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- CSS
+- Lucide React icons
+
+### Backend
+
+- Node.js
+- Express
+- MongoDB Atlas
+- Mongoose
+- JSON Web Tokens
+- bcrypt
+- Zod validation
+- Helmet, CORS, cookie-parser, and Express rate limiting
+
+### Planned Integration and Deployment
+
+- Vapi for conversational appointment calls
+- n8n for clinic automation workflows
+- Vercel for the frontend
+- Render for the backend
+
+## System Flow
+
+1. A user opens the People’s Clinic web application.
+2. The user can explore clinic information or request an appointment by form or AI call.
+3. Patient, doctor, and administrator accounts enter through their respective protected login flows.
+4. The React frontend communicates with the Express API.
+5. The backend validates requests, manages authentication, applies role protection, and communicates with MongoDB.
+6. Each authenticated role will access its own clinic dashboard and permitted information.
+
+## Project Structure
+
+```text
+ai-clinic-management-system/
+├── backend/
+│   └── src/
+│       ├── config/
+│       ├── controllers/
+│       ├── middleware/
+│       ├── models/
+│       ├── routes/
+│       ├── scripts/
+│       ├── app.js
+│       └── server.js
+├── frontend/
+│   ├── public/
+│   │   └── images/
+│   └── src/
+│       ├── components/
+│       │   ├── About/
+│       │   ├── Doctors/
+│       │   ├── Footer/
+│       │   ├── Header/
+│       │   ├── Hero/
+│       │   ├── News/
+│       │   ├── Newsletter/
+│       │   ├── Services/
+│       │   └── Stats/
+│       ├── pages/
+│       ├── App.jsx
+│       └── main.jsx
+├── docs/
+├── .gitignore
+├── package.json
+└── README.md
+```
