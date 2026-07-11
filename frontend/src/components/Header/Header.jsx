@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import './Header.css';
+import './HeaderBehavior.css';
 
 const navigationItems = [
   { label: 'Home', href: '#home' },
@@ -75,6 +76,7 @@ function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginMenuOpen, setIsLoginMenuOpen] = useState(false);
   const [activeNavigation, setActiveNavigation] = useState('Home');
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     function closeMenuOnEscape(event) {
@@ -88,6 +90,13 @@ function Header() {
     return () => window.removeEventListener('keydown', closeMenuOnEscape);
   }, []);
 
+  useEffect(() => {
+    const updateHeader = () => setIsScrolled(window.scrollY > 24);
+    updateHeader();
+    window.addEventListener('scroll', updateHeader, { passive: true });
+    return () => window.removeEventListener('scroll', updateHeader);
+  }, []);
+
   function closeMenu() {
     setIsMenuOpen(false);
     setIsLoginMenuOpen(false);
@@ -99,7 +108,7 @@ function Header() {
   }
 
   return (
-    <header id="home" className="site-header">
+    <header id="home" className={`site-header${isScrolled ? ' site-header--scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>
@@ -135,7 +144,14 @@ function Header() {
               <HeartPulse size={31} strokeWidth={2.2} />
             </span>
             <span className="brand__copy">
-              <strong>PEOPLE&apos;S CLINIC</strong>
+              <strong className="brand__name">
+                <span>People&apos;s</span>
+                <span className="brand__clinic-word">
+                  CL
+                  <Stethoscope className="brand__clinic-symbol" aria-label="i" role="img" />
+                  NIC
+                </span>
+              </strong>
               <small>AI-Powered Healthcare</small>
             </span>
           </a>

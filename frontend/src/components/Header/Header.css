@@ -1,5 +1,6 @@
 .site-header {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 20;
   width: 100%;
   color: #0a2348;
@@ -93,7 +94,7 @@
 }
 
 .site-header__main-inner {
-  min-height: 104px;
+  min-height: 84px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -103,7 +104,7 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 13px;
+  gap: 10px;
   color: inherit;
   text-decoration: none;
   flex-shrink: 0;
@@ -111,14 +112,14 @@
 
 .brand__mark {
   position: relative;
-  width: 57px;
-  height: 57px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
   color: #ffffff;
   background: linear-gradient(145deg, #04b8c6, #0874a9);
-  border-radius: 18px 18px 18px 7px;
-  box-shadow: 0 11px 24px rgba(0, 147, 177, 0.23);
+  border-radius: 15px 15px 15px 6px;
+  box-shadow: 0 9px 19px rgba(0, 147, 177, 0.23);
   overflow: hidden;
 }
 
@@ -134,6 +135,8 @@
 .brand__mark svg {
   position: relative;
   z-index: 1;
+  width: 25px;
+  height: 25px;
 }
 
 .brand__copy {
@@ -141,16 +144,34 @@
   gap: 2px;
 }
 
-.brand__copy strong {
-  font-size: clamp(1.08rem, 1.65vw, 1.52rem);
+.brand__name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: "Segoe Script", "Brush Script MT", cursive;
+  font-size: clamp(0.98rem, 1.4vw, 1.3rem);
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.075em;
-  text-shadow: 0 1px 0 #ffffff, 0 3px 7px rgba(5, 49, 83, 0.13);
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 0 #ffffff, 0 3px 7px rgba(5, 49, 83, 0.16);
+}
+
+.brand__clinic-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.brand__clinic-symbol {
+  width: 0.82em;
+  height: 0.82em;
+  color: #079db7;
+  filter: drop-shadow(0 2px 2px rgba(0, 118, 149, 0.2));
 }
 
 .brand__copy small {
   color: #079db7;
-  font-size: 0.77rem;
+  font-size: 0.64rem;
   font-weight: 650;
   letter-spacing: 0.055em;
 }
@@ -158,7 +179,7 @@
 .primary-navigation ul {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: clamp(10px, 1.25vw, 20px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -172,9 +193,9 @@
   position: relative;
   display: inline-flex;
   padding: 11px clamp(9px, 1vw, 14px);
-  color: #193651;
+  color: #54758d;
   font-size: 0.88rem;
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: 0.012em;
   text-decoration: none;
   text-shadow: 0 1px 0 #ffffff, 0 2px 4px rgba(8, 49, 79, 0.12);
@@ -220,20 +241,20 @@
 }
 
 .login-button {
-  min-height: 50px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 0 19px;
+  padding: 0 15px;
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
   background: linear-gradient(120deg, #061f43, #0a4973);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 12px;
-  box-shadow: 0 12px 24px rgba(4, 35, 69, 0.16);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(4, 35, 69, 0.16);
   cursor: pointer;
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
@@ -377,7 +398,7 @@
   }
 
   .primary-navigation ul {
-    gap: 17px;
+    gap: 10px;
   }
 
   .primary-navigation ul a {
@@ -405,7 +426,7 @@
   }
 
   .site-header__main-inner {
-    min-height: 88px;
+    min-height: 76px;
   }
 
   .menu-button {
@@ -534,25 +555,25 @@
   }
 
   .site-header__main-inner {
-    min-height: 79px;
+    min-height: 68px;
   }
 
   .brand {
-    gap: 9px;
+    gap: 8px;
   }
 
   .brand__mark {
-    width: 48px;
-    height: 48px;
-    border-radius: 15px 15px 15px 6px;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px 13px 13px 5px;
   }
 
   .brand__copy strong {
-    font-size: 1.12rem;
+    font-size: 0.95rem;
   }
 
   .brand__copy small {
-    font-size: 0.65rem;
+    font-size: 0.58rem;
   }
 
   .primary-navigation {
