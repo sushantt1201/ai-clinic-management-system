@@ -1,4 +1,4 @@
-import { ArrowRight, Bot, CalendarCheck2, CalendarDays, Check, Clock3, Phone, PhoneCall, Sparkles, UserRound, Volume2 } from 'lucide-react';
+import { ArrowRight, Bot, CalendarCheck2, CalendarDays, Check, Clock3, Mail, Phone, PhoneCall, Sparkles, Stethoscope, UserRound, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import './Hero.css';
 import './FormEnhancements.css';
@@ -11,13 +11,14 @@ function Hero() {
   const [bookingMessage, setBookingMessage] = useState('');
   const bookingFormRef = useRef(null);
   const skipOutsideBlurRef = useRef(false);
-  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
   useEffect(() => {
     function resetWhenClickingOutside(event) {
       if (!bookingFormRef.current?.contains(event.target)) {
         skipOutsideBlurRef.current = true;
-        bookingFormRef.current?.querySelectorAll('input').forEach((field) => field.setCustomValidity(''));
+        bookingFormRef.current?.querySelectorAll('input, select').forEach((field) => field.setCustomValidity(''));
         if (document.activeElement instanceof HTMLElement && bookingFormRef.current?.contains(document.activeElement)) {
           document.activeElement.blur();
         }
@@ -31,53 +32,66 @@ function Hero() {
     return () => document.removeEventListener('pointerdown', resetWhenClickingOutside, true);
   }, []);
 
-  function submitBooking(event) {
+  async function submitBooking(event) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const date = new Date(`${data.get('date')}T12:00:00`);
-    const day = date.getDay();
-    const time = data.get('time');
-    if (day === 0 || day === 6) {
+    const selectedDate = data.get('date');
+    if (selectedDate < today) {
       const dateField = event.currentTarget.elements.date;
-      dateField.setCustomValidity('The clinic is closed on weekends. Choose a Monday–Friday date.');
+      dateField.setCustomValidity('Choose today or a future date.');
       dateField.reportValidity();
-      setBookingMessage('The clinic is closed on Saturday and Sunday. Please select a weekday.');
+      setBookingMessage('Past dates cannot be used for an appointment request.');
       return;
     }
-    if (!((time >= '09:00' && time <= '12:00') || (time >= '15:00' && time <= '17:00'))) {
-      const timeField = event.currentTarget.elements.time;
-      timeField.setCustomValidity('Select 9:00–12:00 or 15:00–17:00 during clinic hours.');
-      timeField.reportValidity();
-      setBookingMessage('Choose a time between 9:00–12:00 or 15:00–17:00.');
-      return;
+
+    const appointmentRequest = {
+      name: data.get('name').trim(),
+      email: data.get('email').trim().toLowerCase(),
+      phone: `+91${data.get('phone')}`,
+      doctor: data.get('doctor'),
+      preferredDate: selectedDate,
+      preferredTime: data.get('time'),
+      source: 'website-booking-form',
+    };
+    const webhookUrl = import.meta.env.VITE_N8N_APPOINTMENT_WEBHOOK_URL;
+    if (webhookUrl) {
+      try {
+        const response = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(appointmentRequest) });
+        if (!response.ok) throw new Error('Request failed');
+        const result = await response.json().catch(()=>({}));
+        setBookingMessage(result.message || 'Appointment request sent. Our clinic will confirm the available slot shortly.');
+        event.currentTarget.reset();
+      } catch {
+        setBookingMessage('We could not send the request right now. Please try again shortly.');
+      }
+    } else {
+      setBookingMessage('Appointment request is valid and ready for the n8n booking workflow.');
     }
-    setBookingMessage('Your appointment details are valid and ready to submit.');
   }
 
   function handleBookingInvalid(event) {
     const field = event.target;
-    if (!(field instanceof HTMLInputElement)) return;
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement)) return;
     if (field.validity.valueMissing) field.setCustomValidity(`${field.name.charAt(0).toUpperCase() + field.name.slice(1)} is required and cannot be empty.`);
     else if (field.name === 'name') field.setCustomValidity('Enter a valid full name using at least 3 letters.');
-    else if (field.name === 'phone') field.setCustomValidity('Enter a valid phone number containing 10–15 digits.');
-    else if (field.name === 'date') field.setCustomValidity('Choose today or a future weekday date.');
-    else if (field.name === 'time') field.setCustomValidity('Choose a valid appointment time during clinic hours.');
+    else if (field.name === 'email') field.setCustomValidity('Enter a valid email address, such as name@example.com.');
+    else if (field.name === 'phone') field.setCustomValidity('Enter your 10-digit phone number.');
+    else if (field.name === 'doctor') field.setCustomValidity('Select your preferred doctor.');
+    else if (field.name === 'date') field.setCustomValidity('Choose today or a future date.');
+    else if (field.name === 'time') field.setCustomValidity('Choose your preferred appointment time.');
   }
 
   function validateBookingOnBlur(event) {
     if (skipOutsideBlurRef.current) return;
     const field = event.target;
-    if (!(field instanceof HTMLInputElement)) return;
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLSelectElement)) return;
     field.setCustomValidity('');
+    const nextField = event.relatedTarget;
+    if (!nextField || !bookingFormRef.current?.contains(nextField)) return;
     if (!field.value.trim()) return;
     if (!field.validity.valid) {
       handleBookingInvalid({ target: field });
-    } else if (field.name === 'date' && field.value) {
-      const day = new Date(`${field.value}T12:00:00`).getDay();
-      if (day === 0 || day === 6) field.setCustomValidity('The clinic is closed on weekends. Choose a Monday–Friday date.');
-    } else if (field.name === 'time' && field.value && !((field.value >= '09:00' && field.value <= '12:00') || (field.value >= '15:00' && field.value <= '17:00'))) {
-      field.setCustomValidity('Select 9:00–12:00 or 15:00–17:00 during clinic hours.');
-    }
+    } else if (field.name === 'date' && field.value < today) field.setCustomValidity('Choose today or a future date.');
     if (!field.validity.valid) field.reportValidity();
   }
   return (
@@ -124,15 +138,16 @@ function Hero() {
         <div className="booking-card" id="appointments">
           <div className="booking-card__tabs" role="tablist" aria-label="Booking method">
             <button className={bookingMode === 'form' ? 'active' : ''} onClick={() => setBookingMode('form')} type="button"><CalendarCheck2 size={18} /> Book by form</button>
-            <button className={bookingMode === 'ai' ? 'active' : ''} onClick={() => setBookingMode('ai')} type="button"><Bot size={18} /> Book by appointment</button>
+            <button className={bookingMode === 'ai' ? 'active' : ''} onClick={() => setBookingMode('ai')} type="button"><Bot size={18} /> Book by AI agent</button>
           </div>
           {bookingMode === 'form' ? (
             <form ref={bookingFormRef} className="booking-card__form" onSubmit={submitBooking} onInvalid={handleBookingInvalid} onInput={(event) => event.target.setCustomValidity?.('')} onBlur={validateBookingOnBlur}>
               <div><label htmlFor="booking-name">Full name</label><span className="booking-field"><UserRound size={18}/><input id="booking-name" name="name" placeholder="Enter your full name" minLength="3" maxLength="60" pattern="[A-Za-z][A-Za-z .'-]{2,59}" title="Use 3–60 letters and normal name punctuation" required /></span></div>
-              <div><label htmlFor="booking-phone">Phone number</label><span className="booking-field"><Phone size={18}/><input id="booking-phone" name="phone" type="tel" inputMode="tel" placeholder="10–15 digit phone number" pattern="\+?[0-9]{10,15}" title="Enter 10–15 digits, optionally beginning with +" required /></span></div>
-              <div className="booking-card__row"><div><label htmlFor="booking-date">Preferred date</label><span className="booking-field"><CalendarDays size={18}/><input id="booking-date" name="date" type="date" min={today} required /></span></div><div><label htmlFor="booking-time">Preferred time</label><span className="booking-field"><Clock3 size={18}/><input id="booking-time" name="time" type="time" min="09:00" max="17:00" step="900" required /></span></div></div>
+              <div className="booking-card__row"><div><label htmlFor="booking-email">Email address</label><span className="booking-field"><Mail size={18}/><input id="booking-email" name="email" type="email" inputMode="email" autoComplete="email" placeholder="Enter email address" maxLength="120" required /></span></div><div><label htmlFor="booking-phone">Phone number</label><span className="booking-field"><Phone size={18}/><strong className="phone-prefix">+91</strong><input id="booking-phone" name="phone" type="tel" inputMode="numeric" autoComplete="tel-national" placeholder="Enter phone number" pattern="[0-9]{10}" maxLength="10" title="Enter your 10-digit phone number" required /></span></div></div>
+              <div className="booking-card__row"><div><label htmlFor="booking-date">Preferred date</label><span className="booking-field"><CalendarDays size={18}/><input id="booking-date" name="date" type="date" min={today} required /></span></div><div><label htmlFor="booking-time">Preferred time</label><span className="booking-field"><Clock3 size={18}/><input id="booking-time" name="time" type="time" required /></span></div></div>
+              <div><label htmlFor="booking-doctor">Preferred doctor</label><span className="booking-field"><Stethoscope size={18}/><select id="booking-doctor" name="doctor" defaultValue="" required><option value="" disabled>Select a doctor</option><option value="dr-ananya-sharma">Dr. Ananya Sharma — General Medicine</option><option value="dr-rahul-mehta">Dr. Rahul Mehta — Dental Care</option><option value="dr-priya-verma">Dr. Priya Verma — Cardiology</option></select></span></div>
               <button className="booking-card__submit" type="submit">Request appointment <ArrowRight size={17} /></button>
-              {bookingMessage && <p className={`booking-card__message${bookingMessage.includes('valid') ? ' success' : ''}`} role="status">{bookingMessage}</p>}
+              {bookingMessage && <p className={`booking-card__message${bookingMessage.includes('valid') || bookingMessage.includes('sent') ? ' success' : ''}`} role="status">{bookingMessage}</p>}
             </form>
           ) : (
             <div className="booking-card__ai" id="ai-assistant"><div className="ai-call-visual"><span className="ai-call-visual__bot"><Bot size={32}/></span><span className="ai-call-visual__waves"><i/><i/><i/></span><span className="ai-call-visual__phone"><PhoneCall size={27}/></span></div><h2>Book with our AI call agent</h2><p>Talk naturally while the assistant finds a suitable appointment and securely collects your details.</p><div className="ai-call-visual__status"><Volume2 size={16}/> Ready to speak with you</div><button type="button">Start AI call <PhoneCall size={17}/></button></div>

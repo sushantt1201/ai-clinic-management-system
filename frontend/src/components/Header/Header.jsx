@@ -129,7 +129,7 @@ function Header() {
               <CalendarDays aria-hidden="true" size={16} />
               <span>Book appointment</span>
             </a>
-            <a href="#contact" aria-label="View clinic location">
+            <a href="#location-map" aria-label="View clinic location on the map">
               <MapPin aria-hidden="true" size={16} />
               <span>Find us</span>
             </a>
