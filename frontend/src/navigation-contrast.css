@@ -1,0 +1,6 @@
+/* Keep anchored sections visible below the fixed utility and navigation bars. */
+#about,#services,#doctors,#ai-assistant,#contact,#appointments{scroll-margin-top:136px}
+
+/* Authentication welcome copy follows the surface beneath it. */
+.auth-welcome__copy>p,.auth-welcome__copy h1{color:var(--role-dark)!important;text-shadow:0 1px 0 rgba(255,255,255,.65)}.auth-welcome__copy h1 em{display:block;margin-top:4px;color:#fff;font-style:normal;text-shadow:0 3px 12px rgba(0,35,55,.25)}.auth-welcome__copy>span{display:block;width:280px;max-width:70%;margin-top:88px;padding:0;color:#fff!important;background:none;border:0;border-radius:0;box-shadow:none;backdrop-filter:none;text-shadow:0 2px 9px rgba(0,35,55,.32)}
+@media(max-width:900px){#about,#services,#doctors,#ai-assistant,#contact,#appointments{scroll-margin-top:118px}}

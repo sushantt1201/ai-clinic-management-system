@@ -108,7 +108,7 @@ function Header() {
   }
 
   return (
-    <header id="home" className={`site-header${isScrolled ? ' site-header--scrolled' : ''}`}>
+    <header className={`site-header${isScrolled ? ' site-header--scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">
         Skip to main content
       </a>

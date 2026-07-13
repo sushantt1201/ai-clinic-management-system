@@ -11,7 +11,7 @@ import './HomePage.css';
 
 function HomePage() {
   return (
-    <div className="home-page">
+    <div className="home-page" id="home">
       <Header />
       <main id="main-content" className="home-page__canvas" aria-label="People's Clinic home page content">
         <Hero />
