@@ -1,4 +1,13 @@
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '');
+const isVercelDeployment =
+  typeof window !== 'undefined' && window.location.hostname.endsWith('.vercel.app');
+
+// Keep production API traffic on the same Vercel origin. Vercel proxies these
+// requests to Render, preventing browsers and privacy extensions from blocking
+// the cross-site request before it reaches the backend.
+const API_URL = isVercelDeployment
+  ? '/api/v1'
+  : configuredApiUrl || 'http://localhost:5000/api/v1';
 
 export async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
