@@ -1,0 +1,54 @@
+.profile-photo-wrap {
+  position: relative;
+  width: 96px;
+  margin: 0 auto 12px;
+}
+
+.profile-photo-wrap .profile-avatar { margin-bottom: 0; overflow: hidden; }
+.profile-avatar.has-photo { background: #e8f0f2; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.profile-photo-camera {
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff !important;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--dash);
+  box-shadow: 0 5px 13px rgba(18, 67, 86, .22);
+}
+
+.profile-photo-camera svg { width: 16px; }
+.profile-photo-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+.profile-card > .profile-photo-actions {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.profile-photo-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--dash-dark);
+  background: var(--dash-soft);
+  font-size: .68rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.profile-photo-actions button.remove-photo { color: #9a4141; background: #fff0f0; }
+.profile-photo-actions svg { width: 14px; }
+.profile-photo-help { display: block; margin: 8px 0 14px; color: #8398a2; font-size: .62rem; }

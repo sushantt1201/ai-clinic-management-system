@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Activity, Bell, CalendarDays, CheckCircle2, ChevronRight, ClipboardList, Clock3,
   CreditCard, FileHeart, HeartPulse, LayoutDashboard, LogOut, Menu, MessageSquare,
-  Pill, Search, Settings, ShieldCheck, Stethoscope, UserRound, Users, X,
+  Camera, Pill, Search, Settings, ShieldCheck, Stethoscope, Trash2, UserRound, Users, X,
 } from 'lucide-react';
 import { apiRequest } from '../services/api.js';
 import './DashboardPage.css';
+import './ProfilePhoto.css';
 
 const roleMeta = {
   patient: { label: 'Patient portal', icon: UserRound, greeting: 'Your health journey, clearly organized.' },
@@ -70,8 +71,21 @@ function ApprovalPanel({ pending, approve }) {
 }
 
 function ProfileSettings({ user, role, message, setMessage, changePassword }) {
+  const photoInput = useRef(null);
+  const photoStorageKey = `peoples-clinic-profile-photo-${user._id || user.email}`;
+  const [profilePhoto, setProfilePhoto] = useState(() => localStorage.getItem(photoStorageKey) || '');
+  function selectPhoto(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { setMessage('Please choose a JPG, PNG, or WebP image.'); event.target.value = ''; return; }
+    if (file.size > 2 * 1024 * 1024) { setMessage('Profile image must be smaller than 2 MB.'); event.target.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = () => { const image = String(reader.result); setProfilePhoto(image); localStorage.setItem(photoStorageKey, image); setMessage('Profile image updated successfully.'); };
+    reader.readAsDataURL(file);
+  }
+  function removePhoto() { setProfilePhoto(''); localStorage.removeItem(photoStorageKey); if (photoInput.current) photoInput.current.value = ''; setMessage('Profile image removed.'); }
   function saveProfile(event){event.preventDefault();setMessage('Profile preferences saved successfully.');}
-  return <section className="profile-layout"><article className="dash-panel profile-card"><span className="profile-avatar"><UserRound/></span><h2>{user.fullName}</h2><p>{roleMeta[role].label}</p><span className="verified-pill"><CheckCircle2/>Verified account</span><div><small>Email address</small><b>{user.email}</b><small>Phone number</small><b>{user.phone || 'Not provided'}</b></div></article><div><article className="dash-panel settings-form"><div className="dash-panel__head"><div><h2>Personal information</h2><p>Manage how your profile appears in the clinic system</p></div></div><form onSubmit={saveProfile}><label>Full name<input defaultValue={user.fullName} required/></label><label>Email address<input value={user.email} disabled/></label><label>Phone number<input defaultValue={user.phone || ''}/></label><label>Preferred language<select defaultValue="English"><option>English</option><option>Hindi</option></select></label><label className="settings-wide">About<textarea placeholder={role==='doctor'?'Add your specialization and clinical experience':'Add optional profile information'}/></label><button>Save profile</button></form></article><article className="dash-panel settings-form"><div className="dash-panel__head"><div><h2>Password & security</h2><p>Use a strong, unique password for your account</p></div></div><form onSubmit={changePassword}><label>Current password<input name="currentPassword" type="password" placeholder="Enter password" required/></label><label>New password<input name="newPassword" type="password" placeholder="Enter password" minLength="8" required/></label><label>Confirm new password<input name="confirmPassword" type="password" placeholder="Confirm password" minLength="8" required/></label><button>Update password</button></form>{message&&<p className="settings-message">{message}</p>}</article></div></section>;
+return <section className="profile-layout"><article className="dash-panel profile-card"><div className="profile-photo-wrap"><span className={`profile-avatar ${profilePhoto ? 'has-photo' : ''}`}>{profilePhoto ? <img src={profilePhoto} alt={`${user.fullName}'s profile`}/> : <UserRound/>}</span><button className="profile-photo-camera" type="button" onClick={()=>photoInput.current?.click()} aria-label="Choose profile image"><Camera/></button></div><input ref={photoInput} className="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={selectPhoto}/><div className="profile-photo-actions"><button type="button" onClick={()=>photoInput.current?.click()}><Camera/>{profilePhoto ? 'Change photo' : 'Add photo'}</button>{profilePhoto&&<button type="button" className="remove-photo" onClick={removePhoto}><Trash2/>Remove</button>}</div><small className="profile-photo-help">JPG, PNG or WebP · Maximum 2 MB</small><h2>{user.fullName}</h2><p>{roleMeta[role].label}</p><span className="verified-pill"><CheckCircle2/>Verified account</span><div><small>Email address</small><b>{user.email}</b><small>Phone number</small><b>{user.phone || 'Not provided'}</b></div></article><div><article className="dash-panel settings-form"><div className="dash-panel__head"><div><h2>Personal information</h2><p>Manage how your profile appears in the clinic system</p></div></div><form onSubmit={saveProfile}><label>Full name<input defaultValue={user.fullName} required/></label><label>Email address<input value={user.email} disabled/></label><label>Phone number<input defaultValue={user.phone || ''}/></label><label>Preferred language<select defaultValue="English"><option>English</option><option>Hindi</option></select></label><label className="settings-wide">About<textarea placeholder={role==='doctor'?'Add your specialization and clinical experience':'Add optional profile information'}/></label><button>Save profile</button></form></article><article className="dash-panel settings-form"><div className="dash-panel__head"><div><h2>Password & security</h2><p>Use a strong, unique password for your account</p></div></div><form onSubmit={changePassword}><label>Current password<input name="currentPassword" type="password" placeholder="Enter password" required/></label><label>New password<input name="newPassword" type="password" placeholder="Enter password" minLength="8" required/></label><label>Confirm new password<input name="confirmPassword" type="password" placeholder="Confirm password" minLength="8" required/></label><button>Update password</button></form>{message&&<p className="settings-message">{message}</p>}</article></div></section>;
 }
 
 function SectionPlaceholder({ active, role, pending, approve }) {
