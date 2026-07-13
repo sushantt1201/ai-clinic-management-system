@@ -9,6 +9,8 @@
     "build": "node src/scripts/check-source.js",
     "db:check": "node src/scripts/check-database.js",
     "auth:check": "node src/scripts/check-auth.js",
+    "admin:seed": "node src/scripts/seed-admin.js",
+    "auth:clear-test-data": "node src/scripts/clear-auth-test-data.js",
     "lint": "eslint ."
   },
   "dependencies": {

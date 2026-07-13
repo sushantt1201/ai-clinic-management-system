@@ -19,6 +19,8 @@ export const registerSchema = z
     email: emailSchema,
     phone: phoneSchema,
     password: passwordSchema,
+    role: z.enum(['patient', 'doctor']),
+    verificationToken: z.string().min(1),
   })
   .strict();
 
@@ -26,6 +28,7 @@ export const loginSchema = z
   .object({
     identifier: z.string().trim().min(1, 'Email or phone is required'),
     password: z.string().min(1, 'Password is required'),
+    expectedRole: z.enum(['patient', 'doctor', 'admin']),
   })
   .strict();
 

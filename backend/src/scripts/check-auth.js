@@ -3,6 +3,7 @@ import { createApp } from '../app.js';
 import { connectDatabase, disconnectDatabase } from '../config/database.js';
 import { allowRoles } from '../middleware/auth.middleware.js';
 import { User } from '../models/user.model.js';
+import { createOtpVerificationToken } from '../utils/otp.js';
 
 process.env.JWT_SECRET ||= 'local-authentication-check-secret-32-characters-minimum';
 
@@ -39,6 +40,8 @@ try {
       email: testEmail,
       phone: testPhone,
       password,
+      role: 'patient',
+      verificationToken: createOtpVerificationToken(testEmail),
     }),
   });
   assert(registration.response.status === 201, `Registration failed: ${JSON.stringify(registration.body)}`);
@@ -57,6 +60,7 @@ try {
       phone: `+92${String(suffix).slice(-10).padStart(10, '8')}`,
       password,
       role: 'admin',
+      verificationToken: createOtpVerificationToken(`role-${testEmail}`),
     }),
   });
   assert(roleInjection.response.status === 422, 'Public registration accepted a requested admin role');
@@ -68,19 +72,21 @@ try {
       email: testEmail,
       phone: testPhone,
       password,
+      role: 'patient',
+      verificationToken: createOtpVerificationToken(testEmail),
     }),
   });
   assert(duplicate.response.status === 409, 'Duplicate registration was not rejected');
 
   const invalidLogin = await request(baseUrl, '/api/v1/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ identifier: testEmail, password: 'IncorrectPassword1' }),
+    body: JSON.stringify({ identifier: testEmail, password: 'IncorrectPassword1', expectedRole: 'patient' }),
   });
   assert(invalidLogin.response.status === 401, 'Invalid login was not rejected');
 
   const login = await request(baseUrl, '/api/v1/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ identifier: testEmail, password }),
+    body: JSON.stringify({ identifier: testEmail, password, expectedRole: 'patient' }),
   });
   assert(login.response.status === 200, `Login failed: ${JSON.stringify(login.body)}`);
   const cookie = login.response.headers.get('set-cookie')?.split(';')[0];

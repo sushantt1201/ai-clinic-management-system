@@ -5,8 +5,10 @@ const userSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true, trim: true, minlength: 2, maxlength: 80 },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true, index: true },
-    phone: { type: String, required: true, unique: true, trim: true, index: true },
-    password: { type: String, required: true, minlength: 8, select: false },
+    phone: { type: String, unique: true, sparse: true, trim: true, index: true },
+    password: { type: String, minlength: 8, select: false },
+    googleSubject: { type: String, unique: true, sparse: true, select: false },
+    authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
     role: {
       type: String,
       enum: ['patient', 'doctor', 'admin'],
@@ -30,11 +32,12 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre('save', async function hashPassword() {
-  if (!this.isModified('password')) return;
+  if (!this.isModified('password') || !this.password) return;
   this.password = await bcrypt.hash(this.password, 12);
 });
 
 userSchema.methods.comparePassword = function comparePassword(candidatePassword) {
+  if (!this.password) return false;
   return bcrypt.compare(candidatePassword, this.password);
 };
 
