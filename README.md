@@ -68,6 +68,12 @@ People’s Clinic provides a common platform where:
 - Vercel for the frontend
 - Render for the backend
 
+## Live Deployment
+
+- Frontend: https://ai-clinic-management-system-fronten.vercel.app
+- Backend API: https://ai-clinic-management-api.onrender.com
+- Hosting: Vercel Hobby and Render Free
+
 ## System Flow
 
 1. A user opens the People’s Clinic web application.
