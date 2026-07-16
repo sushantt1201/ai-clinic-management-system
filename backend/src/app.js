@@ -7,6 +7,7 @@ import { getDatabaseStatus } from './config/database.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import appointmentRoutes from './routes/appointment.routes.js';
 
 export function createApp() {
   const app = express();
@@ -28,6 +29,7 @@ export function createApp() {
 
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/admin', adminRoutes);
+  app.use('/api/v1/appointments', appointmentRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

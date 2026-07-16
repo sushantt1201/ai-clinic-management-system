@@ -3,12 +3,16 @@ import { useEffect, useRef, useState } from 'react';
 import './Hero.css';
 import './FormEnhancements.css';
 import './TransparentForm.css';
+import { apiRequest } from '../../services/api.js';
+import BookingCheckout from '../Booking/BookingCheckout.jsx';
 
 const careHighlights = ['Experienced doctors', 'Secure patient portal', 'Instant confirmation'];
 
 function Hero() {
   const [bookingMode, setBookingMode] = useState('form');
   const [bookingMessage, setBookingMessage] = useState('');
+  const [bookingFlow, setBookingFlow] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
   const bookingFormRef = useRef(null);
   const skipOutsideBlurRef = useRef(false);
   const now = new Date();
@@ -49,23 +53,17 @@ function Hero() {
       email: data.get('email').trim().toLowerCase(),
       phone: `+91${data.get('phone')}`,
       doctor: data.get('doctor'),
-      preferredDate: selectedDate,
-      preferredTime: data.get('time'),
+      appointmentDate: selectedDate,
+      appointmentTime: data.get('time'),
       source: 'website-booking-form',
     };
-    const webhookUrl = import.meta.env.VITE_N8N_APPOINTMENT_WEBHOOK_URL;
-    if (webhookUrl) {
-      try {
-        const response = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(appointmentRequest) });
-        if (!response.ok) throw new Error('Request failed');
-        const result = await response.json().catch(()=>({}));
-        setBookingMessage(result.message || 'Appointment request sent. Our clinic will confirm the available slot shortly.');
-        event.currentTarget.reset();
-      } catch {
-        setBookingMessage('We could not send the request right now. Please try again shortly.');
-      }
-    } else {
-      setBookingMessage('Appointment request is valid and ready for the n8n booking workflow.');
+    try {
+      setBookingMessage('Checking the selected slot…'); setAvailableSlots([]);
+      const result = await apiRequest('/appointments/request', { method:'POST', body:JSON.stringify(appointmentRequest) });
+      setBookingFlow({ ...result, request:appointmentRequest }); setBookingMessage('');
+    } catch (error) {
+      setBookingMessage(error.message);
+      setAvailableSlots(error.data?.availableSlots || []);
     }
   }
 
@@ -147,6 +145,7 @@ function Hero() {
               <div className="booking-card__row"><div><label htmlFor="booking-date">Preferred date</label><span className="booking-field"><CalendarDays size={18}/><input id="booking-date" name="date" type="date" min={today} required /></span></div><div><label htmlFor="booking-time">Preferred time</label><span className="booking-field"><Clock3 size={18}/><input id="booking-time" name="time" type="time" required /></span></div></div>
               <div><label htmlFor="booking-doctor">Preferred doctor</label><span className="booking-field"><Stethoscope size={18}/><select id="booking-doctor" name="doctor" defaultValue="" required><option value="" disabled>Select a doctor</option><option value="dr-ananya-sharma">Dr. Ananya Sharma — General Medicine</option><option value="dr-rahul-mehta">Dr. Rahul Mehta — Dental Care</option><option value="dr-priya-verma">Dr. Priya Verma — Cardiology</option></select></span></div>
               <button className="booking-card__submit" type="submit">Request appointment <ArrowRight size={17} /></button>
+              {availableSlots.length>0&&<div className="booking-card__slots"><b>Available times that day</b><div>{availableSlots.map(slot=><button type="button" key={slot} onClick={()=>{bookingFormRef.current.elements.time.value=slot;setAvailableSlots([]);setBookingMessage('Selected '+slot+'. Submit again to continue.')}}>{slot}</button>)}</div></div>}
               {bookingMessage && <p className={`booking-card__message${bookingMessage.includes('valid') || bookingMessage.includes('sent') ? ' success' : ''}`} role="status">{bookingMessage}</p>}
             </form>
           ) : (
@@ -154,6 +153,7 @@ function Hero() {
           )}
         </div>
       </div>
+      {bookingFlow&&<BookingCheckout booking={bookingFlow} onClose={()=>setBookingFlow(null)}/>}
     </section>
   );
 }
