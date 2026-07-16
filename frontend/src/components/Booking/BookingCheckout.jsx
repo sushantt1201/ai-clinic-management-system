@@ -21,12 +21,24 @@ export default function BookingCheckout({ booking, onClose }) {
   const [confirmation, setConfirmation] = useState(null);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [paymentResult, setPaymentResult] = useState(null);
+  const [bookingToken, setBookingToken] = useState(booking.appointmentId);
 
-  async function confirmPaidBooking(result) {
+  function downloadAppointmentPdf() {
+    const lines = ["People's Clinic - Appointment Confirmation", `Booking ID: ${confirmation.bookingId}`, `Patient: ${confirmation.patientName}`, `Email: ${confirmation.email}`, `Phone: ${confirmation.phone}`, `Doctor: ${confirmation.doctorName}`, `Date: ${confirmation.appointmentDate}`, `Time: ${confirmation.appointmentTime}`, `Fee paid: INR ${confirmation.feeInr}`, `Payment ID: ${confirmation.paymentId}`];
+    const escaped = lines.map(line=>line.replace(/([\\()])/g,'\\$1'));
+    const stream = `BT /F1 14 Tf 50 790 Td ${escaped.map((line,index)=>`${index?'0 -28 Td ':''}(${line}) Tj`).join(' ')} ET`;
+    const objects = ['1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj','2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj','3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj','4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj',`5 0 obj << /Length ${stream.length} >> stream\n${stream}\nendstream endobj`];
+    let pdf='%PDF-1.4\n', offset=pdf.length; const offsets=[0];
+    for(const object of objects){offsets.push(offset);pdf+=`${object}\n`;offset=pdf.length}
+    const xref=pdf.length;pdf+=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n${offsets.slice(1).map(value=>String(value).padStart(10,'0')+' 00000 n ').join('\n')}\ntrailer << /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    const url=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));const link=document.createElement('a');link.href=url;link.download=`${confirmation.bookingId}-appointment.pdf`;link.click();URL.revokeObjectURL(url);
+  }
+
+  async function confirmPaidBooking(result, token = bookingToken) {
     setStage('working');
     setMessage('Confirming payment and booking your appointment…');
     try {
-      const verified = await apiRequest(`/appointments/${booking.appointmentId}/payment/verify`, {
+      const verified = await apiRequest(`/appointments/${encodeURIComponent(token)}/payment/verify`, {
         method: 'POST', body: JSON.stringify(result),
       });
       setConfirmation(verified.appointment);
@@ -38,7 +50,7 @@ export default function BookingCheckout({ booking, onClose }) {
     }
   }
 
-  function openPaymentCheckout(payment) {
+  function openPaymentCheckout(payment, token = bookingToken) {
     setStage('payment');
     setMessage('');
     const checkout = new window.Razorpay({
@@ -53,7 +65,7 @@ export default function BookingCheckout({ booking, onClose }) {
       theme: { color: '#0785a8' },
       handler: async (result) => {
         setPaymentResult(result);
-        await confirmPaidBooking(result);
+        await confirmPaidBooking(result, token);
       },
       modal: {
         ondismiss: () => {
@@ -70,15 +82,17 @@ export default function BookingCheckout({ booking, onClose }) {
     setStage('working');
     setMessage('Verifying your email…');
     try {
-      await apiRequest(`/appointments/${booking.appointmentId}/otp/verify`, {
+      const verifiedOtp = await apiRequest(`/appointments/${encodeURIComponent(bookingToken)}/otp/verify`, {
         method: 'POST', body: JSON.stringify({ code: otp }),
       });
-      const payment = await apiRequest(`/appointments/${booking.appointmentId}/payment/order`, {
+      setBookingToken(verifiedOtp.appointmentId);
+      const payment = await apiRequest(`/appointments/${encodeURIComponent(verifiedOtp.appointmentId)}/payment/order`, {
         method: 'POST', body: '{}',
       });
+      setBookingToken(payment.appointmentId);
       await loadRazorpay();
       setPaymentDetails(payment);
-      openPaymentCheckout(payment);
+      openPaymentCheckout(payment, payment.appointmentId);
     } catch (error) {
       setStage('otp');
       setMessage(error.message);
@@ -92,7 +106,7 @@ export default function BookingCheckout({ booking, onClose }) {
         <CheckCircle2 /><h2 id="booking-flow-title">Appointment confirmed</h2>
         <p>Your booking has been added to the clinic system.</p>
         <dl><div><dt>Booking ID</dt><dd>{confirmation?.bookingId || booking.bookingId}</dd></div><div><dt>Doctor</dt><dd>{booking.doctorName}</dd></div><div><dt>Date and time</dt><dd>{booking.request.appointmentDate} · {booking.request.appointmentTime}</dd></div></dl>
-        <button onClick={onClose}>Done</button>
+        <button type="button" onClick={downloadAppointmentPdf}>Download appointment PDF</button><button onClick={onClose}>Done</button>
       </div> : <>
         <span className="booking-flow__icon"><ShieldCheck /></span>
         <p className="booking-flow__eyebrow">Secure appointment checkout</p>
