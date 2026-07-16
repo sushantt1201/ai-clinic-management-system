@@ -34,7 +34,13 @@ People’s Clinic provides a common portal where:
 - Field-level validation with clear error messages.
 - Past-date prevention.
 - Form reset when a user leaves the appointment form without completing it.
-- Frontend prepared to send validated appointment data to an n8n webhook.
+- Guest appointment booking without requiring a patient account.
+- Email OTP verification before payment.
+- Doctor-specific fees of ₹400, ₹500, and ₹600.
+- Razorpay test-mode checkout and server-side payment-signature verification.
+- Booking confirmation through n8n after successful payment.
+- Downloadable PDF appointment confirmation containing the booking details and reference ID.
+- Confirmed Google Sheets appointments are synchronized into the patient dashboard by email.
 
 ### 🔐 Authentication and Account Security
 
@@ -101,19 +107,17 @@ The following workflows have been moved from the local Docker n8n instance to th
 - Delete Booking Event.
 - Reschedule Appointment.
 
-These workflows include Google Sheets, Google Calendar, validation, weekend handling, working-hour checks, duplicate-booking checks, and webhook responses. They are currently saved but unpublished while deployed credentials and production webhooks are being configured and tested.
+These workflows include Google Sheets, Google Calendar, validation, weekend handling, working-hour checks, duplicate-booking checks, payment-aware booking confirmation, email notification, and webhook responses. The booking and patient-appointment workflows are deployed and connected to the backend; cancellation, enquiry, and rescheduling remain under integration testing.
 
 ## 🚧 Work in Progress
 
-- Reconnecting Google Sheets and Google Calendar credentials in deployed n8n.
-- Testing all four n8n workflows with production webhook URLs.
-- Connecting the homepage appointment form to the deployed booking workflow.
+- Completing production verification of Google Sheets and Google Calendar writes after payment.
+- Testing enquiry, cancellation, and rescheduling workflows with deployed webhook URLs.
 - Connecting the AI assistant interface to an n8n AI agent.
-- Replacing dashboard demonstration data with live backend and appointment data.
+- Replacing the remaining dashboard demonstration data with live backend data.
 - Persisting profile images through backend storage instead of individual browser storage.
-- Completing appointment confirmation and suggested-slot handling.
-- Adding payment verification before final appointment creation.
-- Sending booking confirmation and invoice details by email.
+- Completing suggested-slot selection when the requested appointment is unavailable.
+- Adding automatic refund handling when payment succeeds but booking confirmation fails.
 
 ## 🛠️ Technology Stack
 
@@ -139,6 +143,7 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 - CORS
 - Cookie Parser
 - Express Rate Limit
+- Native Fetch API for n8n and Razorpay communication
 
 ### Automation and Integrations
 
@@ -147,8 +152,10 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 - Google Calendar
 - Google Identity Services
 - Email OTP verification
+- Brevo transactional email API
+- Razorpay test-mode payments
+- Signed stateless booking tokens
 - Planned AI-agent integration
-- Planned Razorpay test-mode payment integration
 
 ### Deployment
 
@@ -161,7 +168,9 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 
 - **Frontend:** https://ai-clinic-management-system-fronten.vercel.app
 - **Backend API:** https://ai-clinic-management-api.onrender.com
-- **n8n:** deployed separately on Render for clinic automation
+- **Backend health check:** https://ai-clinic-management-api.onrender.com/api/v1/health
+- **n8n:** https://n8n-latest-0t91.onrender.com
+- **GitHub repository:** https://github.com/sushantt1201/ai-clinic-management-system
 
 The project currently uses free-tier services for development, demonstration, and placement purposes. Free Render services may take additional time to wake after inactivity.
 
@@ -170,12 +179,13 @@ The project currently uses free-tier services for development, demonstration, an
 1. A visitor opens the People’s Clinic website.
 2. The visitor explores services, doctors, clinic information, or the AI assistant.
 3. A patient submits an appointment request through the form or AI-agent interface.
-4. The frontend sends validated information to the appropriate backend or n8n webhook.
-5. n8n checks appointment rules, Google Sheets records, and Google Calendar availability.
-6. The system returns availability, rejection details, or suggested appointment slots.
-7. After confirmation and payment verification, the appointment workflow creates the booking.
-8. Booking information is returned to the application and sent to the patient by email.
-9. Authenticated patients, doctors, and administrators access their respective protected dashboards.
+4. The backend checks existing Google Sheets appointments through the deployed n8n workflow.
+5. The system sends a verification code to the supplied email address.
+6. After OTP verification, the backend creates a Razorpay test order for the selected doctor's fee.
+7. The backend verifies the successful payment signature and calls the booking-confirmation workflow.
+8. n8n writes the confirmed appointment to Google Sheets, creates the calendar event, and emails the patient.
+9. The frontend shows the booking reference and allows the patient to download appointment details as a PDF.
+10. Authenticated patients can see appointments matching their email; doctors and administrators use their protected dashboards.
 
 ## 📂 Project Structure
 
@@ -241,6 +251,8 @@ Important configuration includes:
 - Google OAuth client ID.
 - Email OTP credentials.
 - Deployed n8n webhook URLs when integration is enabled.
+- Razorpay test key ID and secret.
+- Booking-token signing secret.
 
 Never commit environment files, passwords, API keys, database credentials, or OAuth secrets.
 
@@ -299,8 +311,8 @@ npm run auth:check
 - Complete live appointment management in all dashboards.
 - AI-generated patient intake summaries for doctors.
 - Intelligent healthcare FAQ and clinic knowledge assistant.
-- Online Razorpay payment verification and automatic refund handling.
-- Downloadable PDF appointment confirmation and invoice.
+- Automatic refund handling for failed post-payment booking confirmation.
+- Expanded branded invoice and receipt PDFs.
 - Automated appointment reminders through email, SMS, or WhatsApp.
 - Electronic prescriptions and patient medical records.
 - Doctor notes, diagnoses, treatment plans, and follow-up recommendations.
@@ -327,7 +339,7 @@ This project demonstrates:
 
 ## 👨‍💻 Author
 
-**Sushant**
+**Sushant Kumar Singh**
 
 - GitHub: https://github.com/sushantt1201
 - Repository: https://github.com/sushantt1201/ai-clinic-management-system
