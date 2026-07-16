@@ -11,6 +11,7 @@ import appointmentRoutes from './routes/appointment.routes.js';
 
 export function createApp() {
   const app = express();
+  app.set('trust proxy', 1);
 
   app.use(helmet());
   app.use(cors({ origin: process.env.CLIENT_URL ?? 'http://localhost:5173', credentials: true }));
