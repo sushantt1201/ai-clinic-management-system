@@ -5,6 +5,8 @@ import {
   Sparkles, Stethoscope, UserRound, X,
 } from 'lucide-react';
 import './AiAssistantPage.css';
+import './ChatActions.css';
+import { apiRequest } from '../services/api.js';
 
 const suggestions = [
   { icon: CalendarDays, label: 'Book an appointment', prompt: 'I want to book an appointment' },
@@ -12,6 +14,14 @@ const suggestions = [
   { icon: Clock3, label: 'Clinic hours', prompt: 'What are the clinic opening hours?' },
   { icon: MapPin, label: 'Location & directions', prompt: 'Where is the clinic located?' },
 ];
+
+const doctorGuide = `Our currently bookable doctors are:
+
+• Dr. Ananya Sharma — General Medicine (₹400): fever, cold, infections, headaches, diabetes, blood-pressure monitoring, routine checkups, and general adult health concerns.
+• Dr. Rahul Mehta — Dental Care (₹500): toothache, cavities, gum problems, dental cleaning, mouth discomfort, and routine dental examinations.
+• Dr. Priya Verma — Cardiology (₹600): heart-health consultations, high blood pressure, palpitations, cholesterol concerns, and follow-up care for known cardiac conditions.
+
+For diet and lifestyle guidance, begin with General Medicine. The doctor can assess your needs and recommend an appropriate nutrition or specialist consultation. This guide helps select a department; it is not a diagnosis. For severe chest pain, breathing difficulty, unconsciousness, or another emergency, call 112 immediately.`;
 
 const initialMessage = {
   id: 'welcome',
@@ -31,24 +41,29 @@ export default function AiAssistantPage() {
   const [sidebar,setSidebar]=useState(false);
   const [isTyping,setIsTyping]=useState(false);
   const conversationRef=useRef(null);
+  const sessionRef=useRef(localStorage.getItem('peoples-clinic-chat-session')||crypto.randomUUID());
 
+  useEffect(()=>{localStorage.setItem('peoples-clinic-chat-session',sessionRef.current)},[]);
   useEffect(()=>{conversationRef.current?.scrollTo({top:conversationRef.current.scrollHeight,behavior:'smooth'})},[messages,isTyping]);
 
-  function sendMessage(text=input){
+  async function sendMessage(text=input){
     const clean=text.trim();
     if(!clean)return;
     const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
     setMessages(current=>[...current,{id:crypto.randomUUID(),role:'user',text:clean,time:now}]);
     setInput('');
     setIsTyping(true);
-    window.setTimeout(()=>{
-      setMessages(current=>[...current,{id:crypto.randomUUID(),role:'assistant',text:'The assistant interface is ready. Once your n8n AI-agent webhook is connected, the hospital’s live answer will appear here.',time:'Now'}]);
-      setIsTyping(false);
-    },650);
+    try{
+      const result=await apiRequest('/assistant/chat',{method:'POST',body:JSON.stringify({message:clean,sessionId:sessionRef.current})});
+      setMessages(current=>[...current,{id:crypto.randomUUID(),role:'assistant',text:result.answer,time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}]);
+    }catch(error){
+      setMessages(current=>[...current,{id:crypto.randomUUID(),role:'assistant',text:error.message||'The clinic assistant is temporarily unavailable. Please try again.',time:'Now'}]);
+    }finally{setIsTyping(false)}
   }
 
   function submit(event){event.preventDefault();sendMessage()}
-  function reset(){setMessages([initialMessage]);setInput('')}
+  function reset(){sessionRef.current=crypto.randomUUID();localStorage.setItem('peoples-clinic-chat-session',sessionRef.current);setMessages([initialMessage]);setInput('')}
+  function showDoctorGuide(){setMessages(current=>[...current,{id:crypto.randomUUID(),role:'user',text:'Which doctor should I consult?',time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})},{id:crypto.randomUUID(),role:'assistant',text:doctorGuide,time:'Now'}]);setSidebar(false)}
 
   return <main className="clinic-chat-page">
     <header className="clinic-chat-header">
@@ -72,6 +87,7 @@ export default function AiAssistantPage() {
           <div className="clinic-chat-intro"><span><Sparkles/></span><h2>Healthcare guidance, without the wait</h2><p>Ask about appointments, departments, doctors, timings, facilities, or visiting the clinic.</p></div>
           {messages.map(message=><ChatMessage message={message} key={message.id}/>)}
           {messages.length===1&&<div className="clinic-quick-prompts">{suggestions.slice(0,3).map(({label,prompt})=><button key={label} onClick={()=>sendMessage(prompt)}>{label}</button>)}</div>}
+          <div className="clinic-chat-actions"><a href="#appointments"><CalendarDays/>Book my appointment</a><button type="button" onClick={showDoctorGuide}><Stethoscope/>Doctor guide</button><button type="button" onClick={()=>sendMessage('Explain the clinic refund rules and how I can check a refund status.')}><ShieldCheck/>Refund help</button></div>
           {isTyping&&<div className="clinic-typing"><span/><span/><span/><small>Assistant is preparing a response</small></div>}
         </div>
         <footer className="clinic-composer">

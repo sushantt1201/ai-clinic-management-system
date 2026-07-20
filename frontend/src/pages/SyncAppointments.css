@@ -1,0 +1,5 @@
+.dash-sync{display:inline-flex;align-items:center;gap:7px;padding:9px 12px!important;border:1px solid color-mix(in srgb,var(--dash) 25%,#dce8ec)!important;border-radius:10px!important;color:#fff!important;background:linear-gradient(135deg,var(--dash),var(--dash-dark))!important;font-weight:750;white-space:nowrap}
+.dash-sync:disabled{cursor:wait;opacity:.72}.dash-sync svg{width:16px}.dash-sync .spinning{animation:dash-spin .8s linear infinite}
+.dash-sync-message{display:flex;align-items:center;gap:7px;margin:-5px 0 13px!important;padding:9px 11px;color:#24785d!important;background:#e9f8f1;border-radius:9px}.dash-sync-message svg{width:16px}
+@keyframes dash-spin{to{transform:rotate(360deg)}}
+@media(max-width:500px){.dash-appointments .dash-panel__head{align-items:flex-start;flex-direction:column}.dash-sync{width:100%;justify-content:center}}

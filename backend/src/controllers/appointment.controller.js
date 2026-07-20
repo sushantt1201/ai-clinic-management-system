@@ -12,6 +12,16 @@ const doctors = {
 };
 
 const N8N_TIMEOUT_MS = 45_000;
+const SHARED_DOCTOR_EMAIL = 'sushantkumar07rewa@gmail.com';
+
+function normalizeSheetAppointment(item = {}) {
+  return {
+    doctorName: item.doctor_name || item.doctorName || item.Doctor || '',
+    date: item.appointment_date || item.appointmentDate || item.date || item.Date || '',
+    time: item.appointment_time || item.appointmentTime || item.time || item.Time || '',
+    status: item.booking_status || item.status || item.Status || '',
+  };
+}
 
 async function postToN8n(webhook, payload, failureMessage) {
   const controller = new AbortController();
@@ -73,7 +83,7 @@ async function sheetAppointments(payload) {
 
 export async function requestAppointment(request,response) {
   const doctor = validate(request.body);
-  const appointments = await sheetAppointments({ role:'admin' });
+  const appointments = (await sheetAppointments({ role:'admin' })).map(normalizeSheetAppointment);
   const displayTime = toDisplayTime(request.body.appointmentTime);
   const booked = appointments.some(item => String(item.doctorName || item.Doctor || '').trim().toLowerCase() === doctor.name.toLowerCase() && (item.date || item.Date) === request.body.appointmentDate && (item.time || item.Time) === displayTime && String(item.status || item.Status || '').toLowerCase() !== 'cancelled');
   if (booked) {
@@ -118,6 +128,9 @@ export async function verifyAppointmentPayment(request,response) {
   response.json({success:true,message:'Appointment booked successfully',appointment:{bookingId:booking.bookingId,patientName:booking.patientName,email:booking.email,phone:booking.phone,doctorName:booking.doctorName,feeInr:booking.feeInr,appointmentDate:booking.appointmentDate,appointmentTime:booking.appointmentTime,status:'confirmed',paymentId}});
 }
 
-export async function listAppointments(request,response){response.json({success:true,appointments:await sheetAppointments({email:request.user.email,role:request.user.role,doctor_name:request.user.fullName})});}
+export async function listAppointments(request,response){
+  const doctorView=request.user.role==='doctor';
+  response.json({success:true,appointments:await sheetAppointments({email:doctorView?SHARED_DOCTOR_EMAIL:request.user.email,role:request.user.role,doctor_name:request.user.fullName,doctor_email:doctorView?SHARED_DOCTOR_EMAIL:undefined})});
+}
 
 function toDisplayTime(time){const[hours,minutes]=time.split(':').map(Number);return `${hours%12||12}:${String(minutes).padStart(2,'0')} ${hours>=12?'PM':'AM'}`;}

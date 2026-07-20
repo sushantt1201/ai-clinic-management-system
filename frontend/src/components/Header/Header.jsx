@@ -121,7 +121,7 @@ function Header() {
           </p>
 
           <div className="site-header__quick-links" aria-label="Clinic quick information">
-            <a href="tel:+15551234567" aria-label="Call People's Clinic">
+            <a href="#ai-assistant" aria-label="Open the 24/7 clinic AI assistant">
               <PhoneCall aria-hidden="true" size={16} />
               <span>24/7 AI support</span>
             </a>

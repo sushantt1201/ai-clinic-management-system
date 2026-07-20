@@ -73,10 +73,13 @@ People’s Clinic provides a common portal where:
 
 - Doctor-specific protected workspace.
 - Approval-pending screen for unapproved doctor accounts.
-- Daily appointment schedule.
+- Live appointment synchronization through the shared doctor account `sushantkumar07rewa@gmail.com`.
+- Daily appointment schedule populated from confirmed clinic bookings.
+- Interactive monthly calendar with previous and next month navigation.
+- Highlighted appointment dates with daily booking counts and expandable patient, time, and booking-reference details.
 - Patient visit status and consultation overview.
 - Weekly appointment analytics.
-- Clinic calendar and patient progress interface.
+- Shared clinic calendar and patient progress interface.
 - Profile settings and password management.
 - Profile-image selection, preview, change, and removal controls.
 
@@ -94,8 +97,13 @@ People’s Clinic provides a common portal where:
 ### 🤖 AI Clinic Assistant Interface
 
 - Dedicated healthcare chatbot interface accessible from the website menu.
-- Designed to answer clinic timings, services, doctors, appointment, and general hospital queries.
-- Prepared for connection to an n8n AI-agent webhook.
+- Connected to the deployed n8n AI-agent webhook with conversation memory.
+- Restricted to People’s Clinic services, doctors, appointments, billing, refunds, timings, directions, and related hospital queries.
+- Requests a booking ID only when appointment, cancellation, rescheduling, payment, receipt, or refund information must be checked.
+- Provides a professional out-of-scope response instead of answering unrelated questions.
+- Includes in-chat quick actions for booking, clinic services, refunds, and specialist guidance.
+- Provides a doctor-selection guide for general medicine, dental care, cardiology, diet, and lifestyle consultations.
+- Includes clear emergency and medical-diagnosis safety guidance.
 - Responsive chat layout for desktop and mobile devices.
 
 ### ⚙️ n8n Clinic Automation Workflows
@@ -106,6 +114,8 @@ The following workflows have been moved from the local Docker n8n instance to th
 - Appointment Enquiry.
 - Delete Booking Event.
 - Reschedule Appointment.
+- People’s Clinic AI Assistant.
+- Patient and doctor appointment synchronization.
 
 These workflows include Google Sheets, Google Calendar, validation, weekend handling, working-hour checks, duplicate-booking checks, payment-aware booking confirmation, email notification, and webhook responses. The booking and patient-appointment workflows are deployed and connected to the backend; cancellation, enquiry, and rescheduling remain under integration testing.
 
@@ -113,7 +123,6 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 
 - Completing production verification of Google Sheets and Google Calendar writes after payment.
 - Testing enquiry, cancellation, and rescheduling workflows with deployed webhook URLs.
-- Connecting the AI assistant interface to an n8n AI agent.
 - Replacing the remaining dashboard demonstration data with live backend data.
 - Persisting profile images through backend storage instead of individual browser storage.
 - Completing suggested-slot selection when the requested appointment is unavailable.
@@ -155,7 +164,7 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 - Brevo transactional email API
 - Razorpay test-mode payments
 - Signed stateless booking tokens
-- Planned AI-agent integration
+- Groq-powered clinic AI agent with n8n conversation memory
 
 ### Deployment
 
@@ -186,6 +195,8 @@ The project currently uses free-tier services for development, demonstration, an
 8. n8n writes the confirmed appointment to Google Sheets, creates the calendar event, and emails the patient.
 9. The frontend shows the booking reference and allows the patient to download appointment details as a PDF.
 10. Authenticated patients can see appointments matching their email; doctors and administrators use their protected dashboards.
+11. Doctors can synchronize confirmed visits and inspect highlighted appointment dates in the shared monthly calendar.
+12. The AI assistant answers clinic-specific questions, offers specialist guidance, and securely requests a booking ID only when a private booking or refund lookup is required.
 
 ## 📂 Project Structure
 
