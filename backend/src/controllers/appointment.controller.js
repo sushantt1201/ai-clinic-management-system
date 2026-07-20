@@ -11,6 +11,35 @@ const doctors = {
   'dr-priya-verma': { name: 'Dr. Priya Verma', fee: 600 },
 };
 
+const N8N_TIMEOUT_MS = 45_000;
+
+async function postToN8n(webhook, payload, failureMessage) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS);
+  const startedAt = Date.now();
+  console.log('[appointments:n8n] request started', { webhookPath: new URL(webhook).pathname, bookingId: payload.booking_id });
+
+  try {
+    const result = await fetch(webhook, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    const data = await result.json().catch(() => ({}));
+    console.log('[appointments:n8n] request completed', { status: result.status, durationMs: Date.now() - startedAt, bookingId: payload.booking_id });
+    if (!result.ok || data.success === false) throw new AppError(502, data.message || `${failureMessage}: n8n returned HTTP ${result.status}`);
+    return data;
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    const timedOut = error?.name === 'AbortError';
+    console.error('[appointments:n8n] request failed', { timedOut, durationMs: Date.now() - startedAt, bookingId: payload.booking_id, error: String(error) });
+    throw new AppError(502, timedOut ? `${failureMessage}: automation timed out. Your payment is safe; retry confirmation without paying again.` : `${failureMessage}: could not reach n8n`);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function clinicSlots() {
   const result = [];
   for (const [start,end] of [[540,720],[900,1020]]) for (let value=start;value<end;value+=15) result.push(`${String(Math.floor(value/60)).padStart(2,'0')}:${String(value%60).padStart(2,'0')}`);
@@ -38,11 +67,7 @@ function patientAppointmentsWebhook() {
 async function sheetAppointments(payload) {
   const webhook = patientAppointmentsWebhook();
   if (!webhook) throw new AppError(503, 'Google Sheets appointment synchronization is not configured');
-  let result;
-  try { result = await fetch(webhook,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}); }
-  catch { throw new AppError(502, 'Could not reach the Google Sheets appointment workflow'); }
-  const data = await result.json().catch(()=>({}));
-  if (!result.ok || data.success === false) throw new AppError(502,data.message || 'Could not check appointment availability');
+  const data = await postToN8n(webhook, payload, 'Could not check appointment availability');
   return data.appointments || [];
 }
 
@@ -55,7 +80,7 @@ export async function requestAppointment(request,response) {
     const used = new Set(appointments.filter(item => String(item.doctorName || item.Doctor || '').trim().toLowerCase() === doctor.name.toLowerCase() && (item.date || item.Date) === request.body.appointmentDate).map(item => item.time || item.Time));
     return response.status(409).json({success:false,message:'That slot is unavailable',availableSlots:clinicSlots().filter(slot=>!used.has(toDisplayTime(slot)))});
   }
-  const booking = { bookingId:`APT-${Date.now()}-${crypto.randomInt(100,999)}`, patientName:request.body.name.trim(), email:request.body.email.trim().toLowerCase(), phone:request.body.phone, doctorSlug:request.body.doctor, doctorName:doctor.name, feeInr:doctor.fee, appointmentDate:request.body.appointmentDate, appointmentTime:request.body.appointmentTime, source:request.body.source || 'website-booking-form' };
+  const booking = { bookingId:`ID-${Date.now()}${crypto.randomInt(1000,9999)}`, patientName:request.body.name.trim(), email:request.body.email.trim().toLowerCase(), phone:request.body.phone, doctorSlug:request.body.doctor, doctorName:doctor.name, feeInr:doctor.fee, appointmentDate:request.body.appointmentDate, appointmentTime:request.body.appointmentTime, source:request.body.source || 'website-booking-form' };
   const code = createOtpCode();
   const token = createBookingToken({ ...booking, stage:'otp', otpDigest:bookingOtpDigest({bookingId:booking.bookingId,code}) },10);
   await sendAppointmentOtpEmail({email:booking.email,code,patientName:booking.patientName,doctorName:booking.doctorName,date:booking.appointmentDate,time:displayTime});
@@ -89,9 +114,7 @@ export async function verifyAppointmentPayment(request,response) {
   const webhook=process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL?.trim();
   if(!webhook) throw new AppError(503,'Booking automation is not configured');
   const payload={name:booking.patientName,email:booking.email,phone:booking.phone,doctor:booking.doctorSlug,doctor_name:booking.doctorName,fee:booking.feeInr,date:booking.appointmentDate,time:toDisplayTime(booking.appointmentTime),source:booking.source,otp_verified_at:new Date().toISOString(),payment_status:'paid',payment_id:paymentId,booking_status:'confirmed',booking_id:booking.bookingId};
-  const automation=await fetch(webhook,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
-  const data=await automation.json().catch(()=>({}));
-  if(!automation.ok || data.success===false) throw new AppError(502,`Payment succeeded, but booking confirmation failed: ${data.message || `n8n returned HTTP ${automation.status}`}`);
+  await postToN8n(webhook, payload, 'Payment succeeded, but booking confirmation failed');
   response.json({success:true,message:'Appointment booked successfully',appointment:{bookingId:booking.bookingId,patientName:booking.patientName,email:booking.email,phone:booking.phone,doctorName:booking.doctorName,feeInr:booking.feeInr,appointmentDate:booking.appointmentDate,appointmentTime:booking.appointmentTime,status:'confirmed',paymentId}});
 }
 
