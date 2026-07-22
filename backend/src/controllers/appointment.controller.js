@@ -13,6 +13,9 @@ const doctors = {
 
 const N8N_TIMEOUT_MS = 45_000;
 const SHARED_DOCTOR_EMAIL = 'sushantkumar07rewa@gmail.com';
+const DEFAULT_N8N_BASE_URL = 'https://n8n-latest-0t91.onrender.com/webhook';
+const DEFAULT_BOOKING_WEBHOOK = `${DEFAULT_N8N_BASE_URL}/appointment`;
+const DEFAULT_PATIENT_APPOINTMENTS_WEBHOOK = `${DEFAULT_N8N_BASE_URL}/patient-appointments`;
 
 function normalizeSheetAppointment(item = {}) {
   return {
@@ -71,7 +74,7 @@ function validate(body) {
 
 function patientAppointmentsWebhook() {
   const configured = process.env.N8N_PATIENT_APPOINTMENTS_WEBHOOK_URL?.trim();
-  return configured || process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL?.trim()?.replace(/\/appointment\/?$/, '/patient-appointments');
+  return configured || process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL?.trim()?.replace(/\/appointment\/?$/, '/patient-appointments') || DEFAULT_PATIENT_APPOINTMENTS_WEBHOOK;
 }
 
 async function sheetAppointments(payload) {
@@ -121,8 +124,7 @@ export async function verifyAppointmentPayment(request,response) {
   const booking=readBookingToken(request.params.id);
   const {razorpay_order_id:orderId,razorpay_payment_id:paymentId,razorpay_signature:signature}=request.body;
   if (booking.stage!=='payment' || orderId!==booking.razorpayOrderId || !verifyPaymentSignature({orderId,paymentId,signature})) throw new AppError(400,'Invalid payment confirmation');
-  const webhook=process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL?.trim();
-  if(!webhook) throw new AppError(503,'Booking automation is not configured');
+  const webhook=process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL?.trim() || DEFAULT_BOOKING_WEBHOOK;
   const payload={name:booking.patientName,email:booking.email,phone:booking.phone,doctor:booking.doctorSlug,doctor_name:booking.doctorName,fee:booking.feeInr,date:booking.appointmentDate,time:toDisplayTime(booking.appointmentTime),source:booking.source,otp_verified_at:new Date().toISOString(),payment_status:'paid',payment_id:paymentId,booking_status:'confirmed',booking_id:booking.bookingId};
   await postToN8n(webhook, payload, 'Payment succeeded, but booking confirmation failed');
   response.json({success:true,message:'Appointment booked successfully',appointment:{bookingId:booking.bookingId,patientName:booking.patientName,email:booking.email,phone:booking.phone,doctorName:booking.doctorName,feeInr:booking.feeInr,appointmentDate:booking.appointmentDate,appointmentTime:booking.appointmentTime,status:'confirmed',paymentId}});

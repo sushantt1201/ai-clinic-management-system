@@ -32,7 +32,8 @@ const initialMessage = {
 
 function ChatMessage({ message }) {
   const isAssistant = message.role === 'assistant';
-  return <article className={`clinic-message clinic-message--${message.role}`}><span className="clinic-message__avatar">{isAssistant?<Bot/>:<UserRound/>}</span><div><div className="clinic-message__meta"><b>{isAssistant?'People’s Clinic AI':'You'}</b><small>{message.time}</small></div><div className="clinic-message__bubble">{message.text}</div></div></article>;
+  const displayText=isAssistant?message.text.replace(/\*\*/g,'').replace(/\s+-\s+(?=[A-Z])/g,'\n• '):message.text;
+  return <article className={`clinic-message clinic-message--${message.role}`}><span className="clinic-message__avatar">{isAssistant?<Bot/>:<UserRound/>}</span><div><div className="clinic-message__meta"><b>{isAssistant?'People’s Clinic AI':'You'}</b><small>{message.time}</small></div><div className="clinic-message__bubble">{displayText}</div></div></article>;
 }
 
 export default function AiAssistantPage() {

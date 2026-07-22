@@ -1,4 +1,4 @@
-import { ArrowRight, Bot, CalendarCheck2, CalendarDays, Check, Clock3, Mail, Phone, PhoneCall, Sparkles, Stethoscope, UserRound, Volume2 } from 'lucide-react';
+import { ArrowRight, Bot, CalendarCheck2, CalendarDays, Check, Clock3, Mail, Phone, Sparkles, Stethoscope, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import './Hero.css';
 import './FormEnhancements.css';
@@ -9,7 +9,6 @@ import BookingCheckout from '../Booking/BookingCheckout.jsx';
 const careHighlights = ['Experienced doctors', 'Secure patient portal', 'Instant confirmation'];
 
 function Hero() {
-  const [bookingMode, setBookingMode] = useState('form');
   const [bookingMessage, setBookingMessage] = useState('');
   const [bookingFlow, setBookingFlow] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -135,11 +134,9 @@ function Hero() {
 
         <div className="booking-card" id="appointments">
           <div className="booking-card__tabs" role="tablist" aria-label="Booking method">
-            <button className={bookingMode === 'form' ? 'active' : ''} onClick={() => setBookingMode('form')} type="button"><CalendarCheck2 size={18} /> Book by form</button>
-            <button className={bookingMode === 'ai' ? 'active' : ''} onClick={() => setBookingMode('ai')} type="button"><Bot size={18} /> Book by AI agent</button>
+            <button className="active" type="button" tabIndex="-1"><CalendarCheck2 size={18} /> Book an appointment</button>
           </div>
-          {bookingMode === 'form' ? (
-            <form ref={bookingFormRef} className="booking-card__form" onSubmit={submitBooking} onInvalid={handleBookingInvalid} onInput={(event) => event.target.setCustomValidity?.('')} onBlur={validateBookingOnBlur}>
+          <form ref={bookingFormRef} className="booking-card__form" onSubmit={submitBooking} onInvalid={handleBookingInvalid} onInput={(event) => event.target.setCustomValidity?.('')} onBlur={validateBookingOnBlur}>
               <div><label htmlFor="booking-name">Full name</label><span className="booking-field"><UserRound size={18}/><input id="booking-name" name="name" placeholder="Enter your full name" minLength="3" maxLength="60" pattern="[A-Za-z][A-Za-z .'-]{2,59}" title="Use 3–60 letters and normal name punctuation" required /></span></div>
               <div className="booking-card__row"><div><label htmlFor="booking-email">Email address</label><span className="booking-field"><Mail size={18}/><input id="booking-email" name="email" type="email" inputMode="email" autoComplete="email" placeholder="Enter email address" maxLength="120" required /></span></div><div><label htmlFor="booking-phone">Phone number</label><span className="booking-field"><Phone size={18}/><strong className="phone-prefix">+91</strong><input id="booking-phone" name="phone" type="tel" inputMode="numeric" autoComplete="tel-national" placeholder="Enter phone number" pattern="[0-9]{10}" maxLength="10" title="Enter your 10-digit phone number" required /></span></div></div>
               <div className="booking-card__row"><div><label htmlFor="booking-date">Preferred date</label><span className="booking-field"><CalendarDays size={18}/><input id="booking-date" name="date" type="date" min={today} required /></span></div><div><label htmlFor="booking-time">Preferred time</label><span className="booking-field"><Clock3 size={18}/><input id="booking-time" name="time" type="time" required /></span></div></div>
@@ -147,10 +144,7 @@ function Hero() {
               <button className="booking-card__submit" type="submit">Request appointment <ArrowRight size={17} /></button>
               {availableSlots.length>0&&<div className="booking-card__slots"><b>Available times that day</b><div>{availableSlots.map(slot=><button type="button" key={slot} onClick={()=>{bookingFormRef.current.elements.time.value=slot;setAvailableSlots([]);setBookingMessage('Selected '+slot+'. Submit again to continue.')}}>{slot}</button>)}</div></div>}
               {bookingMessage && <p className={`booking-card__message${bookingMessage.includes('valid') || bookingMessage.includes('sent') ? ' success' : ''}`} role="status">{bookingMessage}</p>}
-            </form>
-          ) : (
-            <div className="booking-card__ai" id="ai-assistant"><div className="ai-call-visual"><span className="ai-call-visual__bot"><Bot size={32}/></span><span className="ai-call-visual__waves"><i/><i/><i/></span><span className="ai-call-visual__phone"><PhoneCall size={27}/></span></div><h2>Book with our AI call agent</h2><p>Talk naturally while the assistant finds a suitable appointment and securely collects your details.</p><div className="ai-call-visual__status"><Volume2 size={16}/> Ready to speak with you</div><button type="button">Start AI call <PhoneCall size={17}/></button></div>
-          )}
+          </form>
         </div>
       </div>
       {bookingFlow&&<BookingCheckout booking={bookingFlow} onClose={()=>setBookingFlow(null)}/>}
