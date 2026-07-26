@@ -1,0 +1,15 @@
+.doctor-appointment-entry>.consultation-editor{position:fixed;inset:0 0 0 252px;z-index:80;box-sizing:border-box;margin:0;padding:28px clamp(22px,4vw,58px) 45px;border:0;border-radius:0;background:#f4f8fa;overflow-y:auto}.doctor-appointment-entry>.consultation-editor:before{content:"People's Clinic · Doctor consultation";display:block;padding-bottom:15px;border-bottom:1px solid #d7e5e9;color:#24546a;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.doctor-appointment-entry>.consultation-editor .consultation-editor__head{padding:16px 18px;border:1px solid #d7e7eb;border-radius:14px;background:#fff}.doctor-appointment-entry>.consultation-editor .consultation-fields,.doctor-appointment-entry>.consultation-editor .prescription-editor,.doctor-appointment-entry>.consultation-editor .patient-report-preview{padding:18px;border:1px solid #d7e7eb;border-radius:14px;background:#fff}.consultation-actions .print-prescription{margin-right:auto;border:1px solid #b8d8df;background:#fff;color:#0b718c}.patient-prescription-download{justify-self:start;padding:7px 10px;border:1px solid #b8d8df;border-radius:8px;background:#edf8fa;color:#087895;font-size:.63rem;font-weight:850;cursor:pointer}@media(max-width:760px){.doctor-appointment-entry>.consultation-editor{inset:0;padding:18px 14px 35px}.consultation-actions .print-prescription{margin-right:0}}
+.consultation-close {
+  border: 1px solid #bdd3dc;
+  border-radius: 12px;
+  background: #fff;
+  color: #315c6d;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 16px;
+}
+
+.consultation-close:hover {
+  background: #eef7f9;
+}

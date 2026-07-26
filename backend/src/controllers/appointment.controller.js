@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { Consultation } from '../models/consultation.model.js';
 import { sendAppointmentOtpEmail } from '../services/email.service.js';
 import { bookingOtpDigest, createBookingToken, readBookingToken } from '../services/booking-token.service.js';
 import { createPaymentOrder, verifyPaymentSignature } from '../services/razorpay.service.js';
@@ -16,6 +17,8 @@ const SHARED_DOCTOR_EMAIL = 'sushantkumar07rewa@gmail.com';
 const DEFAULT_N8N_BASE_URL = 'https://n8n-latest-0t91.onrender.com/webhook';
 const DEFAULT_BOOKING_WEBHOOK = `${DEFAULT_N8N_BASE_URL}/appointment`;
 const DEFAULT_PATIENT_APPOINTMENTS_WEBHOOK = `${DEFAULT_N8N_BASE_URL}/patient-appointments`;
+const DEFAULT_RESCHEDULE_WEBHOOK = `${DEFAULT_N8N_BASE_URL}/reschedule-appointment`;
+const DEFAULT_CANCEL_WEBHOOK = `${DEFAULT_N8N_BASE_URL}/cancel-appointment`;
 
 function normalizeSheetAppointment(item = {}) {
   return {
@@ -132,7 +135,43 @@ export async function verifyAppointmentPayment(request,response) {
 
 export async function listAppointments(request,response){
   const doctorView=request.user.role==='doctor';
-  response.json({success:true,appointments:await sheetAppointments({email:doctorView?SHARED_DOCTOR_EMAIL:request.user.email,role:request.user.role,doctor_name:request.user.fullName,doctor_email:doctorView?SHARED_DOCTOR_EMAIL:undefined})});
+  const appointments=await sheetAppointments({email:doctorView?SHARED_DOCTOR_EMAIL:request.user.email,role:request.user.role,doctor_name:request.user.fullName,doctor_email:doctorView?SHARED_DOCTOR_EMAIL:undefined});
+  if(request.user.role==='patient'){
+    const completed=await Consultation.find({
+      $or:[{patient:request.user._id},{patientEmail:request.user.email}],
+      status:'completed',
+    }).select('bookingId').lean();
+    const visitedIds=new Set(completed.map(item=>item.bookingId));
+    for(const appointment of appointments){
+      const bookingId=appointment.booking_id||appointment.bookingId||appointment.Booking_ID;
+      if(visitedIds.has(bookingId)){
+        appointment.booking_status='visited';
+        appointment.status='visited';
+        appointment.Status='Visited';
+      }
+    }
+  }
+  response.json({success:true,appointments});
+}
+
+export async function cancelAppointment(request,response) {
+  const bookingID = String(request.params.bookingId || '').trim();
+  if (!/^ID-[A-Za-z0-9-]+$/.test(bookingID)) throw new AppError(422, 'Enter a valid booking ID');
+  const webhook = process.env.N8N_CANCEL_APPOINTMENT_WEBHOOK_URL?.trim() || DEFAULT_CANCEL_WEBHOOK;
+  const data = await postToN8n(webhook, { bookingID, email: request.user.email }, 'Could not cancel the appointment');
+  response.json(data);
+}
+
+export async function rescheduleAppointment(request,response) {
+  const bookingID = String(request.params.bookingId || '').trim();
+  const date = String(request.body.date || '').trim();
+  const time = String(request.body.time || '').trim();
+  if (!/^ID-[A-Za-z0-9-]+$/.test(bookingID)) throw new AppError(422, 'Enter a valid booking ID');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < new Date().toISOString().slice(0, 10)) throw new AppError(422, 'Choose today or a future date');
+  if (!/^\d{1,2}:\d{2} (AM|PM)$/.test(time)) throw new AppError(422, 'Choose a valid appointment time');
+  const webhook = process.env.N8N_RESCHEDULE_APPOINTMENT_WEBHOOK_URL?.trim() || DEFAULT_RESCHEDULE_WEBHOOK;
+  const data = await postToN8n(webhook, { bookingID, date, time, email: request.user.email }, 'Could not reschedule the appointment');
+  response.json(data);
 }
 
 function toDisplayTime(time){const[hours,minutes]=time.split(':').map(Number);return `${hours%12||12}:${String(minutes).padStart(2,'0')} ${hours>=12?'PM':'AM'}`;}

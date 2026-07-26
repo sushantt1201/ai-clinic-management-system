@@ -10,9 +10,10 @@ const API_URL = isVercelDeployment
   : configuredApiUrl || 'http://localhost:5000/api/v1';
 
 export async function apiRequest(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
   const response = await fetch(`${API_URL}${path}`, {
     credentials: 'include',
-    headers: { 'content-type': 'application/json', ...options.headers },
+    headers: { ...(isFormData ? {} : { 'content-type': 'application/json' }), ...options.headers },
     ...options,
   });
   const data = await response.json().catch(() => ({ message: 'The server returned an invalid response' }));

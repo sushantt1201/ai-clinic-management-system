@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { createAppointmentPayment, listAppointments, requestAppointment, verifyAppointmentOtp, verifyAppointmentPayment } from '../controllers/appointment.controller.js';
+import { cancelAppointment, createAppointmentPayment, listAppointments, requestAppointment, rescheduleAppointment, verifyAppointmentOtp, verifyAppointmentPayment } from '../controllers/appointment.controller.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
@@ -11,4 +11,6 @@ router.post('/:id/otp/verify', limiter, asyncHandler(verifyAppointmentOtp));
 router.post('/:id/payment/order', limiter, asyncHandler(createAppointmentPayment));
 router.post('/:id/payment/verify', limiter, asyncHandler(verifyAppointmentPayment));
 router.get('/', requireAuth, asyncHandler(listAppointments));
+router.post('/:bookingId/cancel', requireAuth, asyncHandler(cancelAppointment));
+router.patch('/:bookingId/reschedule', requireAuth, asyncHandler(rescheduleAppointment));
 export default router;

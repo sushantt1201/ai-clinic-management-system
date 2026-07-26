@@ -9,6 +9,9 @@ import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import appointmentRoutes from './routes/appointment.routes.js';
 import assistantRoutes from './routes/assistant.routes.js';
+import medicalReportRoutes from './routes/medical-report.routes.js';
+import medicationRoutes from './routes/medication.routes.js';
+import consultationRoutes from './routes/consultation.routes.js';
 
 export function createApp() {
   const app = express();
@@ -16,7 +19,7 @@ export function createApp() {
 
   app.use(helmet());
   app.use(cors({ origin: process.env.CLIENT_URL ?? 'http://localhost:5173', credentials: true }));
-  app.use(express.json({ limit: '1mb' }));
+  app.use(express.json({ limit: '22mb' }));
   app.use(cookieParser());
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
@@ -33,6 +36,9 @@ export function createApp() {
   app.use('/api/v1/admin', adminRoutes);
   app.use('/api/v1/appointments', appointmentRoutes);
   app.use('/api/v1/assistant', assistantRoutes);
+  app.use('/api/v1/medical-reports', medicalReportRoutes);
+  app.use('/api/v1/medications', medicationRoutes);
+  app.use('/api/v1/consultations', consultationRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
