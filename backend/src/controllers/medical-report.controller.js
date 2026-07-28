@@ -6,7 +6,7 @@ import { AppError } from '../utils/app-error.js';
 import { asyncHandler } from '../utils/async-handler.js';
 
 export const listMyReports = asyncHandler(async (request, response) => {
-  const staleBefore = new Date(Date.now() - 15 * 60 * 1000);
+  const staleBefore = new Date(Date.now() - 4 * 60 * 1000);
   await MedicalReport.updateMany(
     {
       patient: request.user._id,
@@ -19,11 +19,18 @@ export const listMyReports = asyncHandler(async (request, response) => {
   response.json({ success: true, reports });
 });
 
-async function generateSummary(reportId) {
+const SUMMARY_JOB_TIMEOUT_MS = 3 * 60 * 1000;
+
+async function generateSummary(reportId, suppliedFileData = '') {
   const report = await MedicalReport.findById(reportId);
   if (!report) return;
   try {
-    const result = await requestMedicalSummary(report);
+    const result = await Promise.race([
+      requestMedicalSummary(report, suppliedFileData),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new AppError(504, 'AI summary timed out. Select Retry summary to try again.')), SUMMARY_JOB_TIMEOUT_MS);
+      }),
+    ]);
     report.aiSummary = result.summary;
     report.keyFindings = result.keyFindings;
     report.summaryStatus = 'ready';
@@ -31,6 +38,7 @@ async function generateSummary(reportId) {
   } catch (error) {
     report.summaryStatus = 'failed';
     report.summaryError = error.message;
+    console.error('[medical-summary] processing failed', { reportId: report._id.toString(), message: error.message });
   }
   await report.save();
 }
@@ -71,7 +79,7 @@ export const createMedicalReport = asyncHandler(async (request, response) => {
     summaryStartedAt: new Date(),
   });
   response.status(201).json({ success: true, message: 'Medical report uploaded. AI extraction is processing in the background.', report });
-  void generateSummary(report._id).catch(() => {});
+  void generateSummary(report._id, fileData).catch(() => {});
 });
 
 export const summarizeMedicalReport = asyncHandler(async (request, response) => {

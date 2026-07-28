@@ -6,6 +6,8 @@ import { AppError } from '../utils/app-error.js';
 const MAX_REPORT_TEXT = 55_000;
 const MAX_OCR_PDF_PAGES = 20;
 const MIN_USEFUL_PDF_TEXT = 120;
+const REPORT_DOWNLOAD_TIMEOUT_MS = 30_000;
+const OCR_TIMEOUT_MS = 90_000;
 
 let ocrQueue = Promise.resolve();
 
@@ -43,8 +45,14 @@ async function recognizeImage(image) {
 
   let worker;
   try {
-    worker = await createWorker('eng', undefined, { cachePath: tmpdir() });
-    const result = await worker.recognize(image);
+    worker = await Promise.race([
+      createWorker('eng', undefined, { cachePath: tmpdir() }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('OCR worker timed out')), OCR_TIMEOUT_MS)),
+    ]);
+    const result = await Promise.race([
+      worker.recognize(image),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('OCR recognition timed out')), OCR_TIMEOUT_MS)),
+    ]);
     return normalizeText(result.data.text);
   } catch {
     throw new AppError(422, 'Text could not be read from this image. Try a clearer, well-lit scan.');
@@ -91,9 +99,20 @@ async function extractPdfText(buffer) {
 
 async function loadReportBuffer(report, suppliedFileData) {
   if (suppliedFileData) return decodeDataUrl(suppliedFileData, report.mimeType);
-  const response = await fetch(report.fileUrl);
-  if (!response.ok) throw new AppError(502, 'Could not download the medical report for summarization');
-  return Buffer.from(await response.arrayBuffer());
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REPORT_DOWNLOAD_TIMEOUT_MS);
+  try {
+    const response = await fetch(report.fileUrl, { signal: controller.signal });
+    if (!response.ok) throw new AppError(502, 'Could not download the medical report for summarization');
+    return Buffer.from(await response.arrayBuffer());
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(502, error?.name === 'AbortError'
+      ? 'Downloading the medical report timed out. Select Retry summary to try again.'
+      : 'Could not download the medical report for summarization');
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function extractReportText(report, suppliedFileData = '') {

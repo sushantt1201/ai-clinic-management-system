@@ -2,7 +2,7 @@ import { AppError } from '../utils/app-error.js';
 import { extractReportText } from './report-text.service.js';
 
 const DEFAULT_WEBHOOK = 'https://n8n-latest-0t91.onrender.com/webhook/medical-report-summary';
-const TIMEOUT_MS = 60_000;
+const TIMEOUT_MS = 45_000;
 const CHUNK_SIZE = 9_000;
 const MAX_COMBINED_SUMMARIES = 18_000;
 
@@ -51,13 +51,9 @@ async function callSummaryWebhook(webhook, payload) {
 async function summarizeSection(webhook, payload, text, depth = 0) {
   try {
     return await callSummaryWebhook(webhook, { ...payload, reportText: text });
-  } catch {
-    if (depth >= 4 || text.length < 700) {
-      return {
-        summary: `This extracted subsection requires clinician review because the AI service could not process it reliably:\n${text.slice(0, 1800)}`,
-        keyFindings: [],
-      };
-    }
+  } catch (error) {
+    const payloadTooLarge = /(?:too large|payload|maximum context|request entity|413)/i.test(error.message);
+    if (!payloadTooLarge || depth >= 2 || text.length < 2_000) throw error;
     const splitAt = Math.floor(text.length / 2);
     const left = await summarizeSection(webhook, payload, text.slice(0, splitAt), depth + 1);
     const right = await summarizeSection(webhook, payload, text.slice(splitAt), depth + 1);

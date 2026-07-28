@@ -162,13 +162,38 @@ export async function cancelAppointment(request,response) {
   response.json(data);
 }
 
+async function availableRescheduleSlots({ doctorName, date, excludeBookingId = '' }) {
+  if (!doctorName) throw new AppError(422, 'The appointment doctor is missing');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < new Date().toISOString().slice(0, 10)) throw new AppError(422, 'Choose today or a future date');
+  if ([0, 6].includes(new Date(`${date}T00:00:00`).getDay())) return [];
+  const appointments = await sheetAppointments({ role: 'admin' });
+  const used = new Set(appointments.filter(item => {
+    const normalized = normalizeSheetAppointment(item);
+    const bookingId = item.booking_id || item.bookingId || item.Booking_ID || '';
+    return bookingId !== excludeBookingId
+      && normalized.doctorName.trim().toLowerCase() === doctorName.trim().toLowerCase()
+      && normalized.date === date
+      && !['cancelled', 'visited', 'completed'].includes(normalized.status.trim().toLowerCase());
+  }).map(item => normalizeSheetAppointment(item).time));
+  return clinicSlots().map(toDisplayTime).filter(slot => !used.has(slot));
+}
+
+export async function getRescheduleAvailability(request, response) {
+  const doctorName = String(request.query.doctorName || '').trim();
+  const date = String(request.query.date || '').trim();
+  const excludeBookingId = String(request.query.excludeBookingId || '').trim();
+  const availableSlots = await availableRescheduleSlots({ doctorName, date, excludeBookingId });
+  response.json({ success: true, availableSlots, message: availableSlots.length ? 'Available slots loaded' : 'No slots are available on this date' });
+}
+
 export async function rescheduleAppointment(request,response) {
   const bookingID = String(request.params.bookingId || '').trim();
   const date = String(request.body.date || '').trim();
   const time = String(request.body.time || '').trim();
+  const doctorName = String(request.body.doctorName || '').trim();
   if (!/^ID-[A-Za-z0-9-]+$/.test(bookingID)) throw new AppError(422, 'Enter a valid booking ID');
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < new Date().toISOString().slice(0, 10)) throw new AppError(422, 'Choose today or a future date');
-  if (!/^\d{1,2}:\d{2} (AM|PM)$/.test(time)) throw new AppError(422, 'Choose a valid appointment time');
+  const availableSlots = await availableRescheduleSlots({ doctorName, date, excludeBookingId: bookingID });
+  if (!availableSlots.includes(time)) return response.status(409).json({ success: false, message: availableSlots.length ? 'That slot was just booked. Choose another available time.' : 'No slots are available on this date', availableSlots });
   const webhook = process.env.N8N_RESCHEDULE_APPOINTMENT_WEBHOOK_URL?.trim() || DEFAULT_RESCHEDULE_WEBHOOK;
   const data = await postToN8n(webhook, { bookingID, date, time, email: request.user.email }, 'Could not reschedule the appointment');
   response.json(data);
