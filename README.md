@@ -1,10 +1,10 @@
-# 🏥 People’s Clinic — AI-Powered Clinic Management System
+# People’s Clinic — AI-Powered Clinic Management System
 
 People’s Clinic is a modular, AI-powered full-stack healthcare platform for patients, doctors, and clinic administrators. It combines a responsive public website, secure role-based accounts, appointment and payment automation, digital health records, medication tracking, clinical consultation tools, and an AI clinic assistant in one connected system.
 
-The application uses React and Vite for the frontend, Node.js and Express for the REST API, MongoDB Atlas for application data, Cloudinary for uploaded medical documents, and n8n for clinic automation. Google Sheets and Google Calendar support the appointment workflow, while Razorpay test mode, Brevo, Groq, PDF parsing, and OCR provide payment, email, AI, and document-processing capabilities. The frontend is deployed on Vercel; the API and self-hosted n8n instance run on Render.
+The application uses React and Vite for the frontend, Node.js and Express for the REST API, MongoDB Atlas for application data, Cloudinary for uploaded medical documents, and n8n for clinic automation. Google Sheets and Google Calendar support the appointment workflow, while Razorpay test mode, Brevo, Groq, PDF parsing, and OCR provide payment, email, AI, and document-processing capabilities. The frontend is deployed on Vercel, while the API and self-hosted n8n instance run on Render.
 
-## ✨ What the Project Solves
+## What the Project Solves
 
 Traditional clinic processes are often divided between phone calls, paper records, messaging applications, spreadsheets, and disconnected scheduling tools. This can cause appointment delays, repeated administrative work, and difficulty accessing patient information.
 
@@ -18,9 +18,9 @@ People’s Clinic provides a common portal where:
 - Patients can upload medical reports, receive AI-generated summaries, and manage medicine schedules.
 - An AI assistant can answer clinic-specific questions while refusing unrelated requests.
 
-## ✅ Features Implemented
+## Features Implemented
 
-### 🌐 Responsive Clinic Website
+### Responsive Clinic Website
 
 - Modern, responsive People’s Clinic landing page.
 - Sticky navigation with transparent and scrolled states.
@@ -29,7 +29,7 @@ People’s Clinic provides a common portal where:
 - Mobile-friendly layout and reusable React components.
 - A professional form-based appointment experience integrated with the payment and automation workflow.
 
-### 📅 Appointment Request Interface
+### Appointment Request Interface
 
 - Appointment form for name, email, phone number, date, time, and doctor selection.
 - Three selectable doctors in the current frontend interface.
@@ -45,10 +45,10 @@ People’s Clinic provides a common portal where:
 - Confirmed Google Sheets appointments are synchronized into the patient dashboard by email.
 - Patients can cancel confirmed appointments from their dashboard.
 - Patients can reschedule appointments through a dedicated slot-selection dialog.
-- Rescheduling checks the selected doctor's live Google Sheets schedule, prevents weekend bookings, excludes occupied slots, and revalidates availability before submission.
-- Cancellation updates only the matching booking's status, cancellation reason, and timestamp while also attempting to remove its Google Calendar event.
+- Rescheduling checks the selected doctor’s live Google Sheets schedule, prevents weekend bookings, excludes occupied slots, and revalidates availability before submission.
+- Cancellation updates only the matching booking’s status, cancellation reason, and timestamp while also attempting to remove its Google Calendar event.
 
-### 🔐 Authentication and Account Security
+### Authentication and Account Security
 
 - Separate patient, doctor, and administrator login experiences.
 - Patient and doctor registration.
@@ -65,7 +65,7 @@ People’s Clinic provides a common portal where:
 - Role-based route protection for patients, doctors, and administrators.
 - Doctor approval status and administrator-controlled doctor approval.
 
-### 👤 Patient Dashboard
+### Patient Dashboard
 
 - Patient-specific protected dashboard.
 - Email-based synchronization of confirmed Google Sheets appointments.
@@ -88,15 +88,15 @@ People’s Clinic provides a common portal where:
 - Profile-image selection, preview, change, and removal controls.
 - Stalled summary jobs recover automatically, with bounded upload, download, OCR, n8n, and overall processing timeouts.
 
-### 🩺 Doctor Dashboard
+### Doctor Dashboard
 
 - Doctor-specific protected workspace.
 - Approval-pending screen for unapproved doctor accounts.
-- Live appointment synchronization through the shared doctor account `sushantkumar07rewa@gmail.com`.
+- Live appointment synchronization through the shared doctor account.
 - Daily appointment schedule populated from confirmed clinic bookings.
 - Interactive monthly calendar with previous and next month navigation.
 - Highlighted appointment dates with daily booking counts and expandable patient, time, and booking-reference details.
-- Today's appointments ordered by visit time.
+- Today’s appointments ordered by visit time.
 - Searchable patient and appointment lists.
 - Booking-specific consultation workspace.
 - Clinical notes, recommended tests, structured medicines, follow-up date, and next-visit time.
@@ -108,7 +108,7 @@ People’s Clinic provides a common portal where:
 - Profile settings and password management.
 - Profile-image selection, preview, change, and removal controls.
 
-### 🛡️ Administrator Dashboard
+### Administrator Dashboard
 
 - Protected administrator login and dashboard.
 - Clinic account summary.
@@ -121,7 +121,7 @@ People’s Clinic provides a common portal where:
 - Profile settings and password management.
 - Profile-image selection, preview, change, and removal controls.
 
-### 🤖 AI Clinic Assistant Interface
+### AI Clinic Assistant Interface
 
 - Dedicated healthcare chatbot interface accessible from the website menu.
 - Connected to the deployed n8n AI-agent webhook with conversation memory.
@@ -133,7 +133,7 @@ People’s Clinic provides a common portal where:
 - Includes clear emergency and medical-diagnosis safety guidance.
 - Responsive chat layout for desktop and mobile devices.
 
-### ⚙️ n8n Clinic Automation Workflows
+### n8n Clinic Automation Workflows
 
 The following workflows have been moved from the local Docker n8n instance to the deployed n8n instance:
 
@@ -146,7 +146,7 @@ The following workflows have been moved from the local Docker n8n instance to th
 
 These workflows include Google Sheets, Google Calendar, validation, weekend handling, working-hour checks, duplicate-booking checks, payment-aware booking confirmation, email notification, and webhook responses. Booking, patient synchronization, cancellation, and rescheduling are published and connected to the backend. Cancellation remains reliable when a stored calendar event is missing, while rescheduling validates live doctor availability before updating the booking.
 
-### 📄 AI Medical-Report Processing
+### AI Medical-Report Processing
 
 - Cloudinary-backed storage for patient-uploaded PDFs and medical images.
 - Server-side validation for supported file types and maximum upload size.
@@ -158,7 +158,7 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 - Retry support, stale-job recovery, and separate timeouts for network download, OCR, AI workflow, and complete summary processing.
 - MongoDB persistence for summary status, extracted findings, storage metadata, and doctor-sharing state.
 
-## 🚧 Work in Progress
+## Work in Progress
 
 - Completing production verification of Google Sheets and Google Calendar writes after payment.
 - Completing end-to-end production verification of appointment enquiry with deployed webhook URLs.
@@ -167,46 +167,46 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 - Completing suggested-slot selection when the requested appointment is unavailable.
 - Adding automatic refund handling when payment succeeds but booking confirmation fails.
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend
 
-- **React** — component-based landing page, authentication, dashboards, booking checkout, consultation workspace, medication management, and AI assistant.
-- **React DOM** — client-side application rendering.
-- **Vite** — local development server and optimized production bundling.
-- **JavaScript (ES modules)** — application logic and API integration.
-- **Modern CSS** — responsive layouts, role-specific dashboard themes, modals, calendars, charts, and printable clinical views.
-- **Lucide React** — consistent interface icons.
-- **Browser APIs** — PDF generation, file reading, local UI state, print views, and Razorpay checkout integration.
+- React — component-based landing page, authentication, dashboards, booking checkout, consultation workspace, medication management, and AI assistant.
+- React DOM — client-side application rendering.
+- Vite — local development server and optimized production bundling.
+- JavaScript (ES modules) — application logic and API integration.
+- Modern CSS — responsive layouts, role-specific dashboard themes, modals, calendars, charts, and printable clinical views.
+- Lucide React — consistent interface icons.
+- Browser APIs — PDF generation, file reading, local UI state, print views, and Razorpay checkout integration.
 
 ### Backend
 
-- **Node.js** — server runtime using native ES modules and Fetch API.
-- **Express.js** — versioned REST API for authentication, appointments, consultations, reports, medications, administration, and the AI assistant.
-- **MongoDB Atlas and Mongoose** — persistent users, OTP records, consultations, medications, medical reports, and account metadata.
-- **JSON Web Tokens** — signed authentication sessions and stateless booking-stage tokens.
-- **bcryptjs** — password hashing.
-- **Zod** — registration and authentication request validation.
-- **Cookie Parser** — HTTP-only session-cookie handling.
-- **Helmet** — secure HTTP response headers.
-- **CORS** — controlled communication between the Vercel frontend and Render API.
-- **Express Rate Limit** — protection for authentication, OTP, and booking endpoints.
-- **Morgan** — HTTP request logging.
-- **pdf-parse** — text extraction from machine-readable PDF reports.
-- **Tesseract.js** — OCR for scanned reports and image uploads.
-- **Node Crypto** — OTP hashing, Razorpay signature verification, Cloudinary signatures, and secure tokens.
+- Node.js — server runtime using native ES modules and Fetch API.
+- Express.js — versioned REST API for authentication, appointments, consultations, reports, medications, administration, and the AI assistant.
+- MongoDB Atlas and Mongoose — persistent users, OTP records, consultations, medications, medical reports, and account metadata.
+- JSON Web Tokens — signed authentication sessions and stateless booking-stage tokens.
+- bcryptjs — password hashing.
+- Zod — registration and authentication request validation.
+- Cookie Parser — HTTP-only session-cookie handling.
+- Helmet — secure HTTP response headers.
+- CORS — controlled communication between the Vercel frontend and Render API.
+- Express Rate Limit — protection for authentication, OTP, and booking endpoints.
+- Morgan — HTTP request logging.
+- pdf-parse — text extraction from machine-readable PDF reports.
+- Tesseract.js — OCR for scanned reports and image uploads.
+- Node Crypto — OTP hashing, Razorpay signature verification, Cloudinary signatures, and secure tokens.
 
 ### Automation and Integrations
 
-- **n8n** — modular booking, enquiry, cancellation, rescheduling, synchronization, chatbot, and medical-summary workflows.
-- **Google Sheets** — appointment record and workflow data source.
-- **Google Calendar** — doctor calendar-event creation, update, and cancellation.
-- **Google Identity Services** — verified Google Sign-In.
-- **Brevo transactional email API** — registration OTPs, appointment OTPs, password-reset codes, and booking notifications.
-- **Razorpay test mode** — doctor-specific payment orders and server-side signature verification.
-- **Cloudinary** — signed storage and delivery of uploaded medical records.
-- **Groq through n8n** — clinic-restricted conversational assistant and AI-generated report summaries.
-- **n8n conversation memory** — contextual chatbot conversations.
+- n8n — modular booking, enquiry, cancellation, rescheduling, synchronization, chatbot, and medical-summary workflows.
+- Google Sheets — appointment record and workflow data source.
+- Google Calendar — doctor calendar-event creation, update, and cancellation.
+- Google Identity Services — verified Google Sign-In.
+- Brevo transactional email API — registration OTPs, appointment OTPs, password-reset codes, and booking notifications.
+- Razorpay test mode — doctor-specific payment orders and server-side signature verification.
+- Cloudinary — signed storage and delivery of uploaded medical records.
+- Groq through n8n — clinic-restricted conversational assistant and AI-generated report summaries.
+- n8n conversation memory — contextual chatbot conversations.
 
 ### Deployment
 
@@ -218,24 +218,24 @@ These workflows include Google Sheets, Google Calendar, validation, weekend hand
 - Google Sheets — appointment records
 - Google Calendar — doctor scheduling
 
-## 🌍 Live Deployment
+## Live Deployment
 
-- **Frontend:** https://ai-clinic-management-system-fronten.vercel.app
-- **Backend API:** https://ai-clinic-management-api.onrender.com
-- **Backend health check:** https://ai-clinic-management-api.onrender.com/api/v1/health
-- **n8n:** https://n8n-latest-0t91.onrender.com
-- **GitHub repository:** https://github.com/sushantt1201/ai-clinic-management-system
+- Frontend: https://ai-clinic-management-system-fronten.vercel.app
+- Backend API: https://ai-clinic-management-api.onrender.com
+- Backend health check: https://ai-clinic-management-api.onrender.com/api/v1/health
+- n8n: https://n8n-latest-0t91.onrender.com
+- GitHub repository: https://github.com/sushantt1201/ai-clinic-management-system
 
 The project currently uses free-tier services for development, demonstration, and placement purposes. Free Render services may take additional time to wake after inactivity.
 
-## 🔄 System Flow
+## System Flow
 
 1. A visitor opens the People’s Clinic website.
 2. The visitor explores services, doctors, clinic information, or the AI assistant.
 3. A patient submits an appointment request through the validated booking form.
 4. The backend checks existing Google Sheets appointments through the deployed n8n workflow.
 5. The system sends a verification code to the supplied email address.
-6. After OTP verification, the backend creates a Razorpay test order for the selected doctor's fee.
+6. After OTP verification, the backend creates a Razorpay test order for the selected doctor’s fee.
 7. The backend verifies the successful payment signature and calls the booking-confirmation workflow.
 8. n8n writes the confirmed appointment to Google Sheets, creates the calendar event, and emails the patient.
 9. The frontend shows the booking reference and allows the patient to download appointment details as a PDF.
@@ -248,7 +248,7 @@ The project currently uses free-tier services for development, demonstration, an
 16. Doctors can save consultation drafts, send prescriptions, generate patient medication schedules, and mark visits complete.
 17. The AI assistant answers clinic-specific questions, offers specialist guidance, and securely requests a booking ID only when a private booking or refund lookup is required.
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 ai-clinic-management-system/
@@ -282,7 +282,7 @@ ai-clinic-management-system/
 └── README.md
 ```
 
-## 🚀 Local Installation
+## Local Installation
 
 ### 1. Clone the Repository
 
@@ -338,7 +338,7 @@ npm run dev
 
 The local frontend runs on `http://localhost:5173` by default.
 
-## 🧪 Available Verification Commands
+## Available Verification Commands
 
 ### Frontend Production Build
 
@@ -368,7 +368,7 @@ cd backend
 npm run auth:check
 ```
 
-## 🔮 Future Scope
+## Future Scope
 
 - Complete production synchronization of every remaining dashboard metric.
 - AI-generated pre-consultation patient intake summaries combining bookings, reports, and history.
@@ -385,7 +385,7 @@ npm run auth:check
 - Multi-clinic support.
 - Improved audit logs, monitoring, backups, and production security.
 
-## 🎓 Learning Outcomes
+## Learning Outcomes
 
 This project demonstrates:
 
@@ -400,9 +400,9 @@ This project demonstrates:
 - Cloud medical-document storage, PDF extraction, OCR, and AI summarization.
 - Doctor-to-patient prescription synchronization and medication-adherence tracking.
 - Separate frontend, backend, database, and automation deployments.
-- Full-stack debugging across local and production environments.
+  
 
-## 👨‍💻 Author
+## Author
 
 **Sushant Kumar Singh**
 
