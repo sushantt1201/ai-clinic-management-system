@@ -8,3 +8,22 @@
 .home-page__canvas {
   min-height: 70vh;
 }
+
+.homepage-ad {
+  width: 100%;
+  padding: 12px 16px 20px;
+}
+
+.homepage-ad__container {
+  width: 100%;
+  max-width: 728px;
+  min-height: 90px;
+  margin: 0 auto;
+}
+
+.homepage-ad__label {
+  margin: 0 0 8px;
+  color: #777;
+  font-size: 12px;
+  text-align: center;
+}

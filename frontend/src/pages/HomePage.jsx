@@ -1,4 +1,3 @@
-
 import Header from '../components/Header/Header.jsx';
 import Hero from '../components/Hero/Hero.jsx';
 import About from '../components/About/About.jsx';
@@ -8,14 +7,13 @@ import Doctors from '../components/Doctors/Doctors.jsx';
 import News from '../components/News/News.jsx';
 import Newsletter from '../components/Newsletter/Newsletter.jsx';
 import Footer from '../components/Footer/Footer.jsx';
-import AdSenseAd from '../components/AdSenseAd.jsx';
 import './HomePage.css';
+import AdSenseAd from '../components/AdSenseAd.jsx';
 
 function HomePage() {
   return (
     <div className="home-page" id="home">
       <Header />
-
       {/* Google AdSense - Top of Home Page */}
       <section className="homepage-ad" aria-label="Advertisement">
         <div className="homepage-ad__container">
@@ -23,12 +21,7 @@ function HomePage() {
           <AdSenseAd />
         </div>
       </section>
-
-      <main
-        id="main-content"
-        className="home-page__canvas"
-        aria-label="People's Clinic home page content"
-      >
+      <main id="main-content" className="home-page__canvas" aria-label="People's Clinic home page content">
         <Hero />
         <About />
         <Stats />
@@ -37,7 +30,6 @@ function HomePage() {
         <News />
         <Newsletter />
       </main>
-
       <Footer />
     </div>
   );
